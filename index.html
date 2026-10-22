@@ -35,6 +35,15 @@
   table.info { margin-top: 6px; border-collapse: collapse; width: 100%; }
   table.info td { padding: 2px 0; border-bottom: 1px solid #eee; vertical-align: top; }
   table.info td:last-child { text-align: right; font-weight: 600; padding-left: 10px; white-space: nowrap; }
+  .grp { display: block; width: 100%; text-align: left; font: inherit; font-size: 11.5px; font-weight: 700; color: #555; background: none; border: 0; padding: 8px 0 0; cursor: pointer; }
+  .grp:hover { text-decoration: underline; }
+  #list .st { margin-top: 4px; padding: 4px 8px; }
+  table.sum td { padding: 3px 0; }
+  table.sum td:first-child { font-weight: 400; }
+  table.sum button { display: flex; align-items: center; gap: 6px; font: inherit; background: none; border: 0; padding: 0; cursor: pointer; color: #1b1b1b; text-align: left; }
+  table.sum button:hover { text-decoration: underline; }
+  table.sum i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums; }
   .rid { width: 14px; height: 14px; background: #1565c0; border: 2px solid #fff; box-shadow: 0 0 0 1px #0d3c7a, 0 1px 4px rgba(0,0,0,.4); transform: rotate(45deg); }
   .h2 { margin-top: 12px; font-weight: 700; font-size: 12.5px; }
   .xbtn { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #555; }
@@ -76,19 +85,31 @@ const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 
 // สถานี: แก้ lat / lon เป็นพิกัดจริงของจุดที่ปักเสา แล้วลบ sample: true
 // หรือวางไฟล์ stations.json ไว้ข้างไฟล์นี้ (รูปแบบเดียวกัน) หน้าจะอ่านและรีเฟรชทุก 30 วินาที
-// ตอนนี้วางไว้อำเภอละ 1 สถานี ที่จุดกลางอำเภอ (ตำแหน่งและค่าจำลองทั้งหมด)
+// อำเภอละ 2 สถานี วางบนคลอง/แม่น้ำจาก OpenStreetMap (ตำแหน่งและค่าจำลองทั้งหมด)
+// "ลำน้ำไม่ทราบชื่อ" คือลำน้ำที่ OpenStreetMap ยังไม่มีชื่อ แก้ name เป็นชื่อจริงได้เลย
 let STATIONS = [
-  { id: '2401', name: 'เมืองฉะเชิงเทรา', lat: 13.6880, lon: 101.0710, level_cm: 34.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
-  { id: '2402', name: 'บางคล้า',        lat: 13.7449, lon: 101.2072, level_cm: 41.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.1, rh: 80, pres_hpa: 1008.5, batt_v: 3.88, sample: true },
-  { id: '2403', name: 'บางน้ำเปรี้ยว',   lat: 13.8826, lon: 101.0295, level_cm: 22.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 76, pres_hpa: 1008.7, batt_v: 3.97, sample: true },
-  { id: '2404', name: 'บางปะกง',        lat: 13.5319, lon: 100.9617, level_cm: 52.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 82, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
-  { id: '2405', name: 'บ้านโพธิ์',        lat: 13.6093, lon: 101.0814, level_cm: 38.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.7, rh: 81, pres_hpa: 1008.8, batt_v: 3.90, sample: true },
-  { id: '2406', name: 'พนมสารคาม',      lat: 13.7391, lon: 101.4121, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true },
-  { id: '2407', name: 'ราชสาส์น',        lat: 13.7879, lon: 101.2833, level_cm: 18.9, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.95, sample: true },
-  { id: '2408', name: 'สนามชัยเขต',      lat: 13.6194, lon: 101.6458, level_cm: 9.6,  min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.2, rh: 72, pres_hpa: 1008.0, batt_v: 4.03, sample: true },
-  { id: '2409', name: 'แปลงยาว',        lat: 13.5571, lon: 101.3435, level_cm: 15.3, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.5, rh: 73, pres_hpa: 1008.1, batt_v: 3.99, sample: true },
-  { id: '2410', name: 'ท่าตะเกียบ',      lat: 13.3922, lon: 101.7417, level_cm: 7.1,  min_cm: 0.0, time: '22 ต.ค. 2026 21:50', temp_c: 27.9, rh: 70, pres_hpa: 1007.8, batt_v: 4.05, sample: true },
-  { id: '2411', name: 'คลองเขื่อน',      lat: 13.7780, lon: 101.1536, level_cm: 67.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.3, rh: 79, pres_hpa: 1008.6, batt_v: 3.81, sample: true }
+  { id: '2401-1', name: 'แม่น้ำบางปะกง', lat: 13.6692, lon: 101.0758, level_cm: 34.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
+  { id: '2401-2', name: 'คลองขวาง', lat: 13.7371, lon: 100.9557, level_cm: 21.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.5, rh: 77, pres_hpa: 1008.6, batt_v: 3.96, sample: true },
+  { id: '2402-1', name: 'แม่น้ำบางปะกง (ตอนบน)', lat: 13.8526, lon: 101.1624, level_cm: 44.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.0, rh: 80, pres_hpa: 1008.4, batt_v: 3.87, sample: true },
+  { id: '2402-2', name: 'แม่น้ำบางปะกง (ตอนล่าง)', lat: 13.7533, lon: 101.1955, level_cm: 41.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.1, rh: 80, pres_hpa: 1008.5, batt_v: 3.88, sample: true },
+  { id: '2403-1', name: 'คลองแพรกบางลาย', lat: 13.8386, lon: 101.0272, level_cm: 22.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 76, pres_hpa: 1008.7, batt_v: 3.97, sample: true },
+  { id: '2403-2', name: 'คลองกลาง', lat: 13.8118, lon: 100.9578, level_cm: 18.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 75, pres_hpa: 1008.7, batt_v: 4.00, sample: true },
+  { id: '2404-1', name: 'แม่น้ำบางปะกง', lat: 13.4928, lon: 101.0168, level_cm: 52.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 82, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
+  { id: '2404-2', name: 'คลองใหม่', lat: 13.4833, lon: 100.9354, level_cm: 27.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 30.0, rh: 83, pres_hpa: 1009.0, batt_v: 3.93, sample: true },
+  { id: '2405-1', name: 'แม่น้ำบางปะกง', lat: 13.5875, lon: 101.0745, level_cm: 38.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.7, rh: 81, pres_hpa: 1008.8, batt_v: 3.90, sample: true },
+  { id: '2405-2', name: 'คลองประเวศบุรีรมย์', lat: 13.6403, lon: 101.0186, level_cm: 31.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 79, pres_hpa: 1008.8, batt_v: 3.94, sample: true },
+  { id: '2406-1', name: 'คลองท่าลาด', lat: 13.6978, lon: 101.4326, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true },
+  { id: '2406-2', name: 'คลองโพธิ์', lat: 13.7436, lon: 101.3550, level_cm: 8.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.8, rh: 74, pres_hpa: 1008.2, batt_v: 4.02, sample: true },
+  { id: '2407-1', name: 'ลำน้ำไม่ทราบชื่อ 1', lat: 13.8416, lon: 101.2599, level_cm: 18.9, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.95, sample: true },
+  { id: '2407-2', name: 'ลำน้ำไม่ทราบชื่อ 2', lat: 13.7709, lon: 101.2925, level_cm: 14.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.98, sample: true },
+  { id: '2408-1', name: 'คลองท่าลาด', lat: 13.6736, lon: 101.4487, level_cm: 9.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.2, rh: 72, pres_hpa: 1008.0, batt_v: 4.03, sample: true },
+  { id: '2408-2', name: 'ห้วยกล่ำ', lat: 13.5319, lon: 101.5015, level_cm: 6.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.1, rh: 71, pres_hpa: 1007.9, batt_v: 4.04, sample: true },
+  { id: '2409-1', name: 'คลองวังกะจะ', lat: 13.5481, lon: 101.2836, level_cm: 15.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.5, rh: 73, pres_hpa: 1008.1, batt_v: 3.99, sample: true },
+  { id: '2409-2', name: 'คลองเจริญสุข', lat: 13.6046, lon: 101.3027, level_cm: 11.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.6, rh: 73, pres_hpa: 1008.1, batt_v: 4.00, sample: true },
+  { id: '2410-1', name: 'คลองตะเกรา', lat: 13.3702, lon: 101.6848, level_cm: 7.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.9, rh: 70, pres_hpa: 1007.8, batt_v: 4.05, sample: true },
+  { id: '2410-2', name: 'ลำน้ำไม่ทราบชื่อ', lat: 13.4065, lon: 101.7786, level_cm: 5.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.8, rh: 70, pres_hpa: 1007.8, batt_v: 4.06, sample: true },
+  { id: '2411-1', name: 'แม่น้ำบางปะกง', lat: 13.7112, lon: 101.1465, level_cm: 67.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.3, rh: 79, pres_hpa: 1008.6, batt_v: 3.81, sample: true },
+  { id: '2411-2', name: 'คลองชลประทาน', lat: 13.8002, lon: 101.1765, level_cm: 36.7, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.2, rh: 78, pres_hpa: 1008.5, batt_v: 3.91, sample: true }
 ];
 
 // ---------- ขอบเขต (ฝังไว้) ----------
@@ -156,15 +177,7 @@ const districts = L.geoJSON(LAYERS.dist, {
     distLayers[f.properties.code] = layer;
     layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.62, weight: 2 }));
     layer.on('mouseout', () => districts.resetStyle(layer));
-    layer.on('click', () => {
-      const box = document.createElement('div');
-      const b = document.createElement('b');
-      b.textContent = districtTitle(f.properties.name);
-      box.appendChild(b);
-      box.appendChild(document.createElement('br'));
-      box.appendChild(document.createTextNode('พื้นที่ ' + Number(f.properties.area_sqkm).toLocaleString('th-TH', { maximumFractionDigits: 1 }) + ' ตร.กม.'));
-      layer.bindPopup(box).openPopup();
-    });
+    layer.on('click', () => showDistrict(f.properties.code));
   }
 }).addTo(map);
 
@@ -200,11 +213,7 @@ syncChips();
     const sw = document.createElement('i'); sw.style.background = colorOf[f.properties.code];
     const tx = document.createElement('span'); tx.textContent = f.properties.name;
     btn.appendChild(sw); btn.appendChild(tx);
-    btn.addEventListener('click', () => {
-      const layer = distLayers[f.properties.code];
-      map.fitBounds(layer.getBounds(), fitOpts(30));
-      layer.fire('click');
-    });
+    btn.addEventListener('click', () => showDistrict(f.properties.code));
     grid.appendChild(btn);
   });
 })();
@@ -314,6 +323,71 @@ function statusOf(cm) {
   return NORMAL;
 }
 
+// หาว่าสถานีอยู่อำเภอไหน จากพิกัด (ไม่ต้องใส่อำเภอเองใน stations.json)
+function inRing(lon, lat, ring) {
+  let c = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > lat) !== (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+function districtOf(s) {
+  const f = LAYERS.dist.features.find(f => f.geometry.coordinates.some(poly => inRing(s.lon, s.lat, poly[0])));
+  return f ? f.properties.code : '';
+}
+const distName = {};
+LAYERS.dist.features.forEach(f => { distName[f.properties.code] = f.properties.name; });
+const markerById = {};
+
+function colorText(st) { return st.color === '#f9a825' ? '#8a6100' : st.color; }
+
+// กดอำเภอ: ซูมไปที่อำเภอ แล้วสรุปสถานีในอำเภอนั้น
+function showDistrict(code) {
+  const layer = distLayers[code];
+  const f = layer.feature;
+  map.fitBounds(layer.getBounds(), fitOpts(30));
+
+  const box = document.createElement('div');
+  const b = document.createElement('b');
+  b.textContent = districtTitle(f.properties.name);
+  box.appendChild(b);
+  const area = document.createElement('div'); area.className = 'note'; area.style.marginTop = '0';
+  area.textContent = 'พื้นที่ ' + Number(f.properties.area_sqkm).toLocaleString('th-TH', { maximumFractionDigits: 1 }) + ' ตร.กม.';
+  box.appendChild(area);
+
+  const here = STATIONS.filter(s => districtOf(s) === code)
+    .sort((a, c) => Number(c.level_cm) - Number(a.level_cm));
+  if (!here.length) {
+    const no = document.createElement('div'); no.style.marginTop = '6px'; no.textContent = 'ยังไม่มีสถานีในอำเภอนี้';
+    box.appendChild(no);
+  } else {
+    const worst = statusOf(Number(here[0].level_cm));
+    const sum = document.createElement('div'); sum.style.marginTop = '6px';
+    sum.textContent = here.length + ' สถานี · สถานะสูงสุด: ';
+    const w = document.createElement('b'); w.textContent = worst.name; w.style.color = colorText(worst); sum.appendChild(w);
+    box.appendChild(sum);
+    const tb = document.createElement('table'); tb.className = 'info sum';
+    here.forEach(s => {
+      const st = statusOf(Number(s.level_cm));
+      const tr = document.createElement('tr');
+      const a = document.createElement('td');
+      const btn = document.createElement('button'); btn.type = 'button';
+      const dot = document.createElement('i'); dot.style.background = st.color;
+      btn.appendChild(dot); btn.appendChild(document.createTextNode(s.name));
+      btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); markerById[s.id].openPopup(); });
+      a.appendChild(btn);
+      const lv = document.createElement('td'); lv.textContent = Number(s.level_cm).toFixed(1) + ' cm';
+      const ss = document.createElement('td'); ss.textContent = st.name; ss.style.color = colorText(st);
+      tr.appendChild(a); tr.appendChild(lv); tr.appendChild(ss); tb.appendChild(tr);
+    });
+    box.appendChild(tb);
+    const nt = document.createElement('div'); nt.className = 'note'; nt.textContent = 'กดชื่อสถานีเพื่อดูรายละเอียด';
+    box.appendChild(nt);
+  }
+  L.popup({ minWidth: 260, autoPan: false }).setLatLng(layer.getBounds().getCenter()).setContent(box).openOn(map);
+}
+
 function render() {
   stationLayer.clearLayers();
   const list = document.getElementById('list');
@@ -321,7 +395,18 @@ function render() {
   const anySample = STATIONS.some(s => s.sample);
   document.getElementById('simtag').style.display = anySample ? '' : 'none';
 
-  STATIONS.forEach(s => {
+  // เรียงตามอำเภอ แล้วใส่หัวข้ออำเภอในรายการด้านซ้าย
+  const sorted = STATIONS.map(s => ({ s: s, code: districtOf(s) }))
+    .sort((a, c) => a.code < c.code ? -1 : a.code > c.code ? 1 : 0);
+  let lastCode = null;
+  sorted.forEach(({ s, code }) => {
+    if (code !== lastCode) {
+      const h = document.createElement('button'); h.type = 'button'; h.className = 'grp';
+      h.textContent = code ? districtTitle(distName[code]) : 'นอกเขตจังหวัด';
+      if (code) h.addEventListener('click', () => showDistrict(code));
+      list.appendChild(h);
+      lastCode = code;
+    }
     const st = statusOf(Number(s.level_cm));
     const lvl = Number(s.level_cm).toFixed(1);
 
@@ -334,9 +419,11 @@ function render() {
     el.appendChild(dot); el.appendChild(chip);
     const icon = L.divIcon({ html: el, className: '', iconSize: [0, 0] });
     const m = L.marker([s.lat, s.lon], { icon: icon, title: s.name }).addTo(stationLayer);
+    markerById[s.id] = m;
 
     const pop = document.createElement('div');
-    const hd = document.createElement('b'); hd.textContent = s.name + ' · ' + st.name; hd.style.color = st.color === '#f9a825' ? '#8a6100' : st.color; pop.appendChild(hd);
+    const hd = document.createElement('b'); hd.textContent = s.name + ' · ' + st.name; hd.style.color = colorText(st); pop.appendChild(hd);
+    if (code) { const dn = document.createElement('div'); dn.className = 'note'; dn.style.marginTop = '0'; dn.textContent = districtTitle(distName[code]); pop.appendChild(dn); }
     const rows = [];
     const num = (v, d) => (v === undefined || v === null || v === '') ? '-' : Number(v).toFixed(d);
     rows.push(['ระดับน้ำ (เหนือระดับต่ำสุด)', lvl + ' cm']);
