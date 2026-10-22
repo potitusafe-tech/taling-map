@@ -20,12 +20,13 @@
   .legend div { display: flex; align-items: center; gap: 6px; }
   .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
   .note { margin-top: 8px; color: #555; font-size: 11.5px; line-height: 1.45; }
-  .mk { display: flex; align-items: center; transform: translate(-11px, -11px); width: max-content; }
-  .mk .dot { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 1px 4px rgba(0,0,0,.4); box-sizing: border-box; flex: none; }
-  .mk .chip { margin-left: 4px; background: #fff; border: 2px solid var(--c); color: #1b1b1b; border-radius: 6px; padding: 1px 6px; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .mk { display: flex; align-items: center; transform: translate(-7px, -7px); width: max-content; }
+  .mk .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 1px 4px rgba(0,0,0,.4); box-sizing: border-box; flex: none; }
+  .mk .chip { margin-left: 3px; background: #fff; border: 1.5px solid var(--c); color: #1b1b1b; border-radius: 5px; padding: 0 4px; font-weight: 600; font-size: 10.5px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .lowz .mk .chip { display: none; }
   .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
   .dl { width: 0; height: 0; }
-  .dl span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 700; font-size: 11.5px; color: #1b1b1b; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff; pointer-events: none; }
+  .dl span { position: absolute; transform: translate(-50%, calc(-50% - 16px)); white-space: nowrap; font-weight: 700; font-size: 11.5px; color: #1b1b1b; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff; pointer-events: none; }
   .dl.nb span { font-size: 13px; font-weight: 600; color: #4a4a4a; letter-spacing: .02em; }
   .dgrid { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
   .dgrid button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; background: none; border: 0; padding: 2px 0; text-align: left; cursor: pointer; color: inherit; }
@@ -75,10 +76,19 @@ const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 
 // สถานี: แก้ lat / lon เป็นพิกัดจริงของจุดที่ปักเสา แล้วลบ sample: true
 // หรือวางไฟล์ stations.json ไว้ข้างไฟล์นี้ (รูปแบบเดียวกัน) หน้าจะอ่านและรีเฟรชทุก 30 วินาที
+// ตอนนี้วางไว้อำเภอละ 1 สถานี ที่จุดกลางอำเภอ (ตำแหน่งและค่าจำลองทั้งหมด)
 let STATIONS = [
-  { id: 'A', name: 'สถานี A', lat: 13.690, lon: 101.045, level_cm: 32.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
-  { id: 'B', name: 'สถานี B', lat: 13.500, lon: 100.995, level_cm: 31.7, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 81, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
-  { id: 'C', name: 'สถานี C', lat: 13.800, lon: 101.380, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true }
+  { id: '2401', name: 'เมืองฉะเชิงเทรา', lat: 13.6880, lon: 101.0710, level_cm: 34.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
+  { id: '2402', name: 'บางคล้า',        lat: 13.7449, lon: 101.2072, level_cm: 41.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.1, rh: 80, pres_hpa: 1008.5, batt_v: 3.88, sample: true },
+  { id: '2403', name: 'บางน้ำเปรี้ยว',   lat: 13.8826, lon: 101.0295, level_cm: 22.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 76, pres_hpa: 1008.7, batt_v: 3.97, sample: true },
+  { id: '2404', name: 'บางปะกง',        lat: 13.5319, lon: 100.9617, level_cm: 52.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 82, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
+  { id: '2405', name: 'บ้านโพธิ์',        lat: 13.6093, lon: 101.0814, level_cm: 38.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.7, rh: 81, pres_hpa: 1008.8, batt_v: 3.90, sample: true },
+  { id: '2406', name: 'พนมสารคาม',      lat: 13.7391, lon: 101.4121, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true },
+  { id: '2407', name: 'ราชสาส์น',        lat: 13.7879, lon: 101.2833, level_cm: 18.9, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.95, sample: true },
+  { id: '2408', name: 'สนามชัยเขต',      lat: 13.6194, lon: 101.6458, level_cm: 9.6,  min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.2, rh: 72, pres_hpa: 1008.0, batt_v: 4.03, sample: true },
+  { id: '2409', name: 'แปลงยาว',        lat: 13.5571, lon: 101.3435, level_cm: 15.3, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.5, rh: 73, pres_hpa: 1008.1, batt_v: 3.99, sample: true },
+  { id: '2410', name: 'ท่าตะเกียบ',      lat: 13.3922, lon: 101.7417, level_cm: 7.1,  min_cm: 0.0, time: '22 ต.ค. 2026 21:50', temp_c: 27.9, rh: 70, pres_hpa: 1007.8, batt_v: 4.05, sample: true },
+  { id: '2411', name: 'คลองเขื่อน',      lat: 13.7780, lon: 101.1536, level_cm: 67.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.3, rh: 79, pres_hpa: 1008.6, batt_v: 3.81, sample: true }
 ];
 
 // ---------- ขอบเขต (ฝังไว้) ----------
@@ -174,6 +184,12 @@ function syncLabels() {
 }
 map.on('zoomend', syncLabels);
 syncLabels();
+
+// สถานีมีหลายจุด ซูมไกลแสดงแค่จุดสี ซูมใกล้แล้วค่อยแสดงชื่อ
+const CHIP_MIN_ZOOM = 10.5;
+function syncChips() { map.getContainer().classList.toggle('lowz', map.getZoom() < CHIP_MIN_ZOOM); }
+map.on('zoomend', syncChips);
+syncChips();
 
 // รายการอำเภอในแผงด้านซ้าย
 (function () {
