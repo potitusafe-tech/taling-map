@@ -8,14 +8,14 @@
 <style>
   /* สีทั้งหมดเป็นตัวแปร: :root = โหมดสว่าง, บล็อกด้านล่าง = โหมดมืด (ตามระบบ หรือเลือกเองจากปุ่มในแผง) */
   :root {
-    --bg: #ffffff; --fg: #1b1b1b; --muted: #555; --sub: #444; --btn: #f6f6f6; --btn-h: #eee; --line: #ddd; --row: #eee;
+    --sky: #eef6fc; --bg: #ffffff; --fg: #1b1b1b; --muted: #555; --sub: #444; --btn: #f6f6f6; --btn-h: #eee; --line: #ddd; --row: #eee;
     --shadow: rgba(0,0,0,.3); --halo: #fff; --nb: #4a4a4a; --link: #1d5fa8; --simc: #b26a00; --seg: #1d5fa8; --seg-fg: #fff;
     --tiles: none;
     --toggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23264653' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='m2 16 10 5 10-5'/%3E%3Cpath d='m2 12 10 5 10-5'/%3E%3Cpath d='M12 3 2 8l10 5 10-5z' fill='%235aaee8'/%3E%3C/svg%3E");
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-    --bg: #1f2427; --fg: #e4e8ea; --muted: #a0a9ae; --sub: #c4cace; --btn: #2a3135; --btn-h: #343c41; --line: #3b4448; --row: #343c41;
+    --sky: #1a2b36; --bg: #1f2427; --fg: #e4e8ea; --muted: #a0a9ae; --sub: #c4cace; --btn: #2a3135; --btn-h: #343c41; --line: #3b4448; --row: #343c41;
     --shadow: rgba(0,0,0,.6); --halo: #121517; --nb: #b5bec3; --link: #7fc4f2; --simc: #f0b450; --seg: #5aaee8; --seg-fg: #10202b;
     --toggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6ebf8' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='m2 16 10 5 10-5'/%3E%3Cpath d='m2 12 10 5 10-5'/%3E%3Cpath d='M12 3 2 8l10 5 10-5z' fill='%235aaee8'/%3E%3C/svg%3E");
     --tiles: invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55);
@@ -23,7 +23,7 @@
     }
   }
   :root[data-theme="dark"] {
-    --bg: #1f2427; --fg: #e4e8ea; --muted: #a0a9ae; --sub: #c4cace; --btn: #2a3135; --btn-h: #343c41; --line: #3b4448; --row: #343c41;
+    --sky: #1a2b36; --bg: #1f2427; --fg: #e4e8ea; --muted: #a0a9ae; --sub: #c4cace; --btn: #2a3135; --btn-h: #343c41; --line: #3b4448; --row: #343c41;
     --shadow: rgba(0,0,0,.6); --halo: #121517; --nb: #b5bec3; --link: #7fc4f2; --simc: #f0b450; --seg: #5aaee8; --seg-fg: #10202b;
     --toggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d6ebf8' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='m2 16 10 5 10-5'/%3E%3Cpath d='m2 12 10 5 10-5'/%3E%3Cpath d='M12 3 2 8l10 5 10-5z' fill='%235aaee8'/%3E%3C/svg%3E");
     --tiles: invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55);
@@ -89,6 +89,20 @@
   #open { position: absolute; z-index: 1000; top: 10px; left: 10px; display: none; font: inherit; font-weight: 700; background: var(--bg); color: var(--fg); border: 0; border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
   body.closed .panel { display: none; }
   body.closed #open { display: block; }
+  .stwrap { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: flex-start; }
+  .stwrap table.info { flex: 1 1 220px; width: auto; }
+  @media (min-width: 680px) { .stwrap { width: 590px; flex-wrap: nowrap; } .stwrap table.info { flex: 1 1 auto; } .fig { flex: 0 0 260px; } }
+  .fig { flex: 0 1 270px; min-width: 0; margin-top: 6px; }
+  .fig svg { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--sky); }
+  .fig .cap { margin-top: 3px; text-align: center; font-size: 11.5px; color: var(--muted); }
+  .wl { transition: transform 1.8s cubic-bezier(.25,.8,.3,1); }
+  .bob { animation: bob 2.8s ease-in-out infinite alternate; }
+  .wv1 { animation: wave1 3.2s linear infinite; }
+  .wv2 { animation: wave2 5.5s linear infinite; }
+  @keyframes bob { from { transform: translateY(-4px); } to { transform: translateY(4px); } }
+  @keyframes wave1 { to { transform: translateX(-100px); } }
+  @keyframes wave2 { from { transform: translateX(-140px); } to { transform: translateX(0); } }
+  @media (prefers-reduced-motion: reduce) { .wl { transition: none; } .bob, .wv1, .wv2 { animation: none; } }
   #wmsg { margin-top: 6px; font-size: 12px; color: var(--link); }
 </style>
 </head>
@@ -135,30 +149,31 @@ const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 // สถานี: แก้ lat / lon เป็นพิกัดจริงของจุดที่ปักเสา แล้วลบ sample: true
 // หรือวางไฟล์ stations.json ไว้ข้างไฟล์นี้ (รูปแบบเดียวกัน) หน้าจะอ่านและรีเฟรชทุก 30 วินาที
 // อำเภอละ 2 สถานี วางบนคลอง/แม่น้ำจาก OpenStreetMap (ตำแหน่งและค่าจำลองทั้งหมด)
+// bank = ลักษณะตลิ่ง 1 ลาด, 2 ชัน, 3 กำแพงคอนกรีต, 4 ขั้นบันได, 5 สองช่วง (ตอนนี้สุ่มไว้)
 // "ลำน้ำไม่ทราบชื่อ" คือลำน้ำที่ OpenStreetMap ยังไม่มีชื่อ แก้ name เป็นชื่อจริงได้เลย
 let STATIONS = [
-  { id: '2401-1', name: 'แม่น้ำบางปะกง', lat: 13.6692, lon: 101.0758, level_cm: 34.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
-  { id: '2401-2', name: 'คลองขวาง', lat: 13.7371, lon: 100.9557, level_cm: 21.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.5, rh: 77, pres_hpa: 1008.6, batt_v: 3.96, sample: true },
-  { id: '2402-1', name: 'แม่น้ำบางปะกง (ตอนบน)', lat: 13.8526, lon: 101.1624, level_cm: 44.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.0, rh: 80, pres_hpa: 1008.4, batt_v: 3.87, sample: true },
-  { id: '2402-2', name: 'แม่น้ำบางปะกง (ตอนล่าง)', lat: 13.7533, lon: 101.1955, level_cm: 41.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.1, rh: 80, pres_hpa: 1008.5, batt_v: 3.88, sample: true },
-  { id: '2403-1', name: 'คลองแพรกบางลาย', lat: 13.8386, lon: 101.0272, level_cm: 22.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 76, pres_hpa: 1008.7, batt_v: 3.97, sample: true },
-  { id: '2403-2', name: 'คลองกลาง', lat: 13.8118, lon: 100.9578, level_cm: 18.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 75, pres_hpa: 1008.7, batt_v: 4.00, sample: true },
-  { id: '2404-1', name: 'แม่น้ำบางปะกง', lat: 13.4928, lon: 101.0168, level_cm: 52.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 82, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
-  { id: '2404-2', name: 'คลองใหม่', lat: 13.4833, lon: 100.9354, level_cm: 27.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 30.0, rh: 83, pres_hpa: 1009.0, batt_v: 3.93, sample: true },
-  { id: '2405-1', name: 'แม่น้ำบางปะกง', lat: 13.5875, lon: 101.0745, level_cm: 38.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.7, rh: 81, pres_hpa: 1008.8, batt_v: 3.90, sample: true },
-  { id: '2405-2', name: 'คลองประเวศบุรีรมย์', lat: 13.6403, lon: 101.0186, level_cm: 31.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 79, pres_hpa: 1008.8, batt_v: 3.94, sample: true },
-  { id: '2406-1', name: 'คลองท่าลาด', lat: 13.6978, lon: 101.4326, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true },
-  { id: '2406-2', name: 'คลองโพธิ์', lat: 13.7436, lon: 101.3550, level_cm: 8.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.8, rh: 74, pres_hpa: 1008.2, batt_v: 4.02, sample: true },
-  { id: '2407-1', name: 'ลำน้ำไม่ทราบชื่อ 1', lat: 13.8416, lon: 101.2599, level_cm: 18.9, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.95, sample: true },
-  { id: '2407-2', name: 'ลำน้ำไม่ทราบชื่อ 2', lat: 13.7709, lon: 101.2925, level_cm: 14.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.98, sample: true },
-  { id: '2408-1', name: 'คลองท่าลาด', lat: 13.6736, lon: 101.4487, level_cm: 9.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.2, rh: 72, pres_hpa: 1008.0, batt_v: 4.03, sample: true },
-  { id: '2408-2', name: 'ห้วยกล่ำ', lat: 13.5319, lon: 101.5015, level_cm: 6.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.1, rh: 71, pres_hpa: 1007.9, batt_v: 4.04, sample: true },
-  { id: '2409-1', name: 'คลองวังกะจะ', lat: 13.5481, lon: 101.2836, level_cm: 15.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.5, rh: 73, pres_hpa: 1008.1, batt_v: 3.99, sample: true },
-  { id: '2409-2', name: 'คลองเจริญสุข', lat: 13.6046, lon: 101.3027, level_cm: 11.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.6, rh: 73, pres_hpa: 1008.1, batt_v: 4.00, sample: true },
-  { id: '2410-1', name: 'คลองตะเกรา', lat: 13.3702, lon: 101.6848, level_cm: 7.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.9, rh: 70, pres_hpa: 1007.8, batt_v: 4.05, sample: true },
-  { id: '2410-2', name: 'ลำน้ำไม่ทราบชื่อ', lat: 13.4065, lon: 101.7786, level_cm: 5.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.8, rh: 70, pres_hpa: 1007.8, batt_v: 4.06, sample: true },
-  { id: '2411-1', name: 'แม่น้ำบางปะกง', lat: 13.7112, lon: 101.1465, level_cm: 67.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.3, rh: 79, pres_hpa: 1008.6, batt_v: 3.81, sample: true },
-  { id: '2411-2', name: 'คลองชลประทาน', lat: 13.8002, lon: 101.1765, level_cm: 36.7, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.2, rh: 78, pres_hpa: 1008.5, batt_v: 3.91, sample: true }
+  { id: '2401-1', name: 'แม่น้ำบางปะกง', lat: 13.6692, lon: 101.0758, level_cm: 34.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, bank: 4, sample: true },
+  { id: '2401-2', name: 'คลองขวาง', lat: 13.7371, lon: 100.9557, level_cm: 21.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.5, rh: 77, pres_hpa: 1008.6, batt_v: 3.96, bank: 5, sample: true },
+  { id: '2402-1', name: 'แม่น้ำบางปะกง (ตอนบน)', lat: 13.8526, lon: 101.1624, level_cm: 44.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.0, rh: 80, pres_hpa: 1008.4, batt_v: 3.87, bank: 1, sample: true },
+  { id: '2402-2', name: 'แม่น้ำบางปะกง (ตอนล่าง)', lat: 13.7533, lon: 101.1955, level_cm: 41.5, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.1, rh: 80, pres_hpa: 1008.5, batt_v: 3.88, bank: 3, sample: true },
+  { id: '2403-1', name: 'คลองแพรกบางลาย', lat: 13.8386, lon: 101.0272, level_cm: 22.8, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 76, pres_hpa: 1008.7, batt_v: 3.97, bank: 4, sample: true },
+  { id: '2403-2', name: 'คลองกลาง', lat: 13.8118, lon: 100.9578, level_cm: 18.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 75, pres_hpa: 1008.7, batt_v: 4.00, bank: 2, sample: true },
+  { id: '2404-1', name: 'แม่น้ำบางปะกง', lat: 13.4928, lon: 101.0168, level_cm: 52.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 82, pres_hpa: 1008.9, batt_v: 3.85, bank: 3, sample: true },
+  { id: '2404-2', name: 'คลองใหม่', lat: 13.4833, lon: 100.9354, level_cm: 27.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 30.0, rh: 83, pres_hpa: 1009.0, batt_v: 3.93, bank: 5, sample: true },
+  { id: '2405-1', name: 'แม่น้ำบางปะกง', lat: 13.5875, lon: 101.0745, level_cm: 38.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.7, rh: 81, pres_hpa: 1008.8, batt_v: 3.90, bank: 5, sample: true },
+  { id: '2405-2', name: 'คลองประเวศบุรีรมย์', lat: 13.6403, lon: 101.0186, level_cm: 31.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.6, rh: 79, pres_hpa: 1008.8, batt_v: 3.94, bank: 2, sample: true },
+  { id: '2406-1', name: 'คลองท่าลาด', lat: 13.6978, lon: 101.4326, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, bank: 1, sample: true },
+  { id: '2406-2', name: 'คลองโพธิ์', lat: 13.7436, lon: 101.3550, level_cm: 8.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.8, rh: 74, pres_hpa: 1008.2, batt_v: 4.02, bank: 1, sample: true },
+  { id: '2407-1', name: 'ลำน้ำไม่ทราบชื่อ 1', lat: 13.8416, lon: 101.2599, level_cm: 18.9, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.95, bank: 4, sample: true },
+  { id: '2407-2', name: 'ลำน้ำไม่ทราบชื่อ 2', lat: 13.7709, lon: 101.2925, level_cm: 14.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.9, rh: 75, pres_hpa: 1008.3, batt_v: 3.98, bank: 4, sample: true },
+  { id: '2408-1', name: 'คลองท่าลาด', lat: 13.6736, lon: 101.4487, level_cm: 9.6, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.2, rh: 72, pres_hpa: 1008.0, batt_v: 4.03, bank: 5, sample: true },
+  { id: '2408-2', name: 'ห้วยกล่ำ', lat: 13.5319, lon: 101.5015, level_cm: 6.2, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.1, rh: 71, pres_hpa: 1007.9, batt_v: 4.04, bank: 2, sample: true },
+  { id: '2409-1', name: 'คลองวังกะจะ', lat: 13.5481, lon: 101.2836, level_cm: 15.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.5, rh: 73, pres_hpa: 1008.1, batt_v: 3.99, bank: 2, sample: true },
+  { id: '2409-2', name: 'คลองเจริญสุข', lat: 13.6046, lon: 101.3027, level_cm: 11.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 28.6, rh: 73, pres_hpa: 1008.1, batt_v: 4.00, bank: 4, sample: true },
+  { id: '2410-1', name: 'คลองตะเกรา', lat: 13.3702, lon: 101.6848, level_cm: 7.1, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.9, rh: 70, pres_hpa: 1007.8, batt_v: 4.05, bank: 3, sample: true },
+  { id: '2410-2', name: 'ลำน้ำไม่ทราบชื่อ', lat: 13.4065, lon: 101.7786, level_cm: 5.4, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 27.8, rh: 70, pres_hpa: 1007.8, batt_v: 4.06, bank: 3, sample: true },
+  { id: '2411-1', name: 'แม่น้ำบางปะกง', lat: 13.7112, lon: 101.1465, level_cm: 67.3, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.3, rh: 79, pres_hpa: 1008.6, batt_v: 3.81, bank: 2, sample: true },
+  { id: '2411-2', name: 'คลองชลประทาน', lat: 13.8002, lon: 101.1765, level_cm: 36.7, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.2, rh: 78, pres_hpa: 1008.5, batt_v: 3.91, bank: 1, sample: true }
 ];
 
 // ---------- ขอบเขต (ฝังไว้) ----------
@@ -182,11 +197,17 @@ function fitOpts(pad) {
     ? { paddingTopLeft: [300, pad], paddingBottomRight: [pad, pad] }
     : { padding: [pad, pad] };
 }
-map.fitBounds(prov.getBounds(), fitOpts(20));
+// ถ้าหน้าเปิดตอนแผนที่ยังไม่มีขนาด (เช่นแท็บซ่อนอยู่) ตั้งมุมมองคร่าวๆ ก่อน แล้วค่อยพอดีจังหวัดเมื่อมีขนาด
+let fitted = false;
+function fitProvince() {
+  if (map.getSize().x > 0) { map.fitBounds(prov.getBounds(), fitOpts(20)); fitted = true; }
+  else map.setView(prov.getBounds().getCenter(), 9);
+}
+fitProvince();
 // ซูมออกได้ไม่เกินกรอบจังหวัดข้างเคียง
-function syncMinZoom() { map.setMinZoom(map.getBoundsZoom(REGION, true)); }
+function syncMinZoom() { if (map.getSize().x > 0) map.setMinZoom(map.getBoundsZoom(REGION, true)); }
 syncMinZoom();
-map.on('resize', syncMinZoom);
+map.on('resize', () => { syncMinZoom(); if (!fitted) fitProvince(); });
 
 // ชื่อจังหวัดที่ติดกัน (ตำแหน่งป้ายโดยประมาณ)
 const NEIGHBORS = [
@@ -196,8 +217,9 @@ const NEIGHBORS = [
 ];
 NEIGHBORS.forEach(n => {
   const icon = L.divIcon({ className: 'dl nb', html: '<span></span>', iconSize: [0, 0] });
-  const m = L.marker([n[1], n[2]], { icon: icon, interactive: false, keyboard: false }).addTo(map);
-  m.getElement().firstChild.textContent = n[0];
+  const m = L.marker([n[1], n[2]], { icon: icon, interactive: false, keyboard: false });
+  m.on('add', () => { m.getElement().firstChild.textContent = n[0]; });
+  m.addTo(map);
 });
 
 // ทำให้นอกจังหวัดมืดลง
@@ -442,8 +464,78 @@ function showDistrict(code) {
   L.popup({ minWidth: 260, autoPan: false }).setLatLng(layer.getBounds().getCenter()).setContent(box).openOn(map);
 }
 
+// ---------- ภาพตัดขวางตลิ่งในกล่องสถานี ----------
+// พิกัดในภาพ 800x500: เซนเซอร์อยู่ที่ y=92 สูงจากระดับต่ำสุด 140 cm, ระดับ 0 cm อยู่ที่ y=430
+const BANKS = {
+  1: { name: 'ตลิ่งลาด', ground: '0,270 426,270 560,370 620,440 800,440 800,500 0,500' },
+  2: { name: 'ตลิ่งชัน', ground: '0,270 440,270 470,380 500,440 800,440 800,500 0,500' },
+  3: { name: 'กำแพงคอนกรีต', ground: '0,270 450,270 450,440 800,440 800,500 0,500', wall: true },
+  4: { name: 'ตลิ่งขั้นบันได', ground: '0,270 430,270 430,315 480,315 480,360 530,360 530,440 800,440 800,500 0,500' },
+  5: { name: 'ตลิ่งสองช่วง น้ำสูง', ground: '0,270 426,270 500,320 560,440 800,440 800,500 0,500' }
+};
+const SENSOR_Y = 92, ZERO_Y = 430, PX_PER_CM = (ZERO_Y - SENSOR_Y) / 140;
+function levelY(cm) { return ZERO_Y - Math.max(-5, Math.min(150, Number(cm) || 0)) * PX_PER_CM; }
+function bankOf(s) {
+  if (BANKS[s.bank]) return Number(s.bank);
+  let h = 0; for (const ch of String(s.id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h % 5 + 1;
+}
+function wavePath(amp, len) {
+  let d = 'M-200 0';
+  for (let x = -200; x < 1000; x += len) d += ' q' + len / 4 + ' ' + (-amp) + ' ' + len / 2 + ' 0 t' + len / 2 + ' 0';
+  return d + ' L1000 600 L-200 600 Z';
+}
+function bankFigure(s, st) {
+  const n = bankOf(s), b = BANKS[n];
+  const lvl = Number(s.level_cm);
+  const ticks = THRESHOLDS.map(t => '<line x1="752" x2="800" y1="' + levelY(t.cm) + '" y2="' + levelY(t.cm) + '" stroke="' + t.color + '" stroke-width="5"/>').join('');
+  const fig = document.createElement('div'); fig.className = 'fig';
+  fig.innerHTML =
+    '<svg viewBox="0 0 800 500" role="img" aria-label="ภาพตัดขวาง' + b.name + ' ระดับน้ำ ' + lvl.toFixed(1) + ' cm">' +
+    '<line x1="580" y1="92" x2="580" y2="600" stroke="#d9582b" stroke-width="3" stroke-dasharray="10 8"/>' +
+    '<g class="wl" style="transform:translateY(' + levelY(lvl) + 'px)"><g class="bob">' +
+      '<g class="wv2"><path d="' + wavePath(7, 140) + '" fill="#7fbbe6"/></g>' +
+      '<g class="wv1"><path d="' + wavePath(6, 100) + '" fill="#b6dbf4" fill-opacity=".92" stroke="#3a86c8" stroke-width="3"/></g>' +
+    '</g></g>' +
+    '<polygon points="' + b.ground + '" fill="#e2d1b1" stroke="#8a6d3b" stroke-width="2"/>' +
+    (b.wall ? '<rect x="444" y="270" width="11" height="170" fill="#7a7a7a"/>' : '') +
+    ticks +
+    '<rect x="140" y="373" width="220" height="8" fill="#d9582b" stroke="#7a2e14" stroke-width="2"/>' +
+    '<rect x="244" y="50" width="12" height="323" fill="#f2f2f2" stroke="#333" stroke-width="2"/>' +
+    '<line x1="256" y1="218" x2="402" y2="76" stroke="#555" stroke-width="6"/>' +
+    '<rect x="244" y="69" width="336" height="7" fill="#f2f2f2" stroke="#333" stroke-width="2"/>' +
+    '<rect x="200" y="72" width="44" height="44" fill="#e6f4ea" stroke="#1e7a45" stroke-width="3"/>' +
+    '<rect x="573" y="77" width="14" height="15" rx="2" fill="#222"/>' +
+    '<text x="790" y="150" text-anchor="end" font-size="44" font-weight="700" style="fill:' + colorText(st) + '">' + lvl.toFixed(1) + ' cm</text>' +
+    '<text x="598" y="200" font-size="30" style="fill:var(--muted)">↕ ' + (140 - lvl).toFixed(1) + ' cm</text>' +
+    '</svg>';
+  const cap = document.createElement('div'); cap.className = 'cap';
+  cap.textContent = 'แบบที่ ' + n + ' ' + b.name;
+  fig.appendChild(cap);
+  return fig;
+}
+// น้ำเลื่อนจากระดับก่อนหน้า (หรือจากก้นคลองเมื่อเพิ่งเปิด) ไปยังระดับล่าสุด
+const waterY = {};
+let rendering = false;
+function riseWater(s, root) {
+  const wl = root && root.querySelector('.wl');
+  if (!wl) return;
+  const target = levelY(s.level_cm);
+  const from = waterY[s.id] !== undefined ? waterY[s.id] : 470;
+  wl.style.transition = 'none';
+  wl.style.transform = 'translateY(' + from + 'px)';
+  wl.getBoundingClientRect();
+  wl.style.transition = '';
+  wl.style.transform = 'translateY(' + target + 'px)';
+  waterY[s.id] = target;
+}
+
 function render() {
+  // ข้อมูลใหม่เข้ามาแล้วกล่องสถานีเปิดค้างอยู่ ให้เปิดกลับและน้ำเลื่อนจากระดับเดิม
+  const openId = Object.keys(markerById).find(id => markerById[id].isPopupOpen());
+  rendering = true;
   stationLayer.clearLayers();
+  rendering = false;
   const list = document.getElementById('list');
   list.textContent = '';
   const anySample = STATIONS.some(s => s.sample);
@@ -491,9 +583,13 @@ function render() {
     rows.push(['อัปเดตล่าสุด', s.time]);
     const tb = document.createElement('table'); tb.className = 'info';
     rows.forEach(r => { const tr = document.createElement('tr'); const a1 = document.createElement('td'); a1.textContent = r[0]; const a2 = document.createElement('td'); a2.textContent = r[1]; tr.appendChild(a1); tr.appendChild(a2); tb.appendChild(tr); });
-    pop.appendChild(tb);
-    if (s.sample) { const sm = document.createElement('div'); sm.className = 'note'; sm.textContent = 'ตำแหน่งและค่าเป็นข้อมูลจำลอง'; pop.appendChild(sm); }
-    m.bindPopup(pop, { minWidth: 250 });
+    const wrap = document.createElement('div'); wrap.className = 'stwrap';
+    wrap.appendChild(tb); wrap.appendChild(bankFigure(s, st));
+    pop.appendChild(wrap);
+    if (s.sample) { const sm = document.createElement('div'); sm.className = 'note'; sm.textContent = 'ตำแหน่ง ค่า และลักษณะตลิ่งเป็นข้อมูลจำลอง'; pop.appendChild(sm); }
+    m.bindPopup(pop, { minWidth: 250, maxWidth: Math.min(640, window.innerWidth - 40) });
+    m.on('popupopen', e => riseWater(s, e.popup.getElement()));
+    m.on('popupclose', () => { if (!rendering) delete waterY[s.id]; });
 
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'st';
@@ -504,6 +600,7 @@ function render() {
     btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); m.openPopup(); });
     list.appendChild(btn);
   });
+  if (openId && markerById[openId] && map.hasLayer(markerById[openId])) markerById[openId].openPopup();
 }
 
 function renderLegend() {
