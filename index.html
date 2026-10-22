@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ตลิ่งคลอง - แผนที่ฉะเชิงเทรา</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
@@ -183,8 +184,17 @@ const LAYERS = {"prov":{"type":"Feature","properties":{"name":"ฉะเชิ�
 // ขอบเขตที่เลื่อนแผนที่ได้: ฉะเชิงเทราและจังหวัดที่ติดกัน (กรอบสี่เหลี่ยมคร่าวๆ)
 const REGION = L.latLngBounds([12.2, 100.25], [14.6, 102.95]);
 const map = L.map('map', { zoomControl: true, zoomSnap: 0.25, maxBounds: REGION, maxBoundsViscosity: 1.0 });
+// แผนที่พื้นหลังหลักใช้ Esri: เซิร์ฟเวอร์ของ OpenStreetMap บล็อกหน้าที่ไม่มี Referer (เปิดไฟล์ตรง ฝังในหน้าอื่น)
+// และส่งภาพ "Access blocked" มาแทนแผนที่ จึงเหลือ OSM ไว้เป็นตัวเลือกในเมนูเลเยอร์
+// (ภาพ blocked โหลดได้ปกติ จึงสลับให้อัตโนมัติไม่ได้ สลับเองเฉพาะตอนเซิร์ฟเวอร์ไม่ตอบ)
+const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19, bounds: REGION, attribution: 'Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors'
+});
 const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19, bounds: REGION, attribution: '© OpenStreetMap contributors'
+});
+osm.on('tileerror', () => {
+  if (map.hasLayer(osm)) { map.removeLayer(osm); esri.addTo(map).bringToBack(); }
 });
 
 const prov = L.geoJSON(LAYERS.prov, {
@@ -298,7 +308,7 @@ colorSwitch.on('add remove', e => {
   document.querySelectorAll('.dgrid i').forEach(i => { i.style.opacity = showDistrictColor ? '' : '0.25'; });
 });
 L.control.layers(
-  {},
+  { 'Esri': esri, 'OpenStreetMap': osm },
   { 'อำเภอ': districts, 'สีอำเภอ': colorSwitch, 'เส้นทางน้ำ': waterLayer, 'สถานีกรมชลประทาน': ridLayer, 'สถานี': stationLayer },
   { collapsed: true, position: 'topright' }
 ).addTo(map);
@@ -636,7 +646,7 @@ async function loadLive() {
 // อัตโนมัติ = ตามระบบเครื่อง, เลือกเองแล้วจำไว้ในเบราว์เซอร์นี้
 function applyTheme() {
   const d = isDark();
-  if (!map.hasLayer(osm)) osm.addTo(map).bringToBack();
+  if (!map.hasLayer(osm) && !map.hasLayer(esri)) esri.addTo(map).bringToBack();
   mask.setStyle({ fillOpacity: d ? 0.45 : 0.3 });
   districts.setStyle(f => districts.options.style(f));
   render();
