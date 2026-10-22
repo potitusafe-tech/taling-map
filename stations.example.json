@@ -1,0 +1,3 @@
+[
+  { "id": "A", "name": "สถานี A", "lat": 13.690, "lon": 101.045, "level_cm": 32.0, "min_cm": 0.0, "time": "22 ต.ค. 2026 22:00", "temp_c": 29.4, "rh": 78, "pres_hpa": 1008.6, "batt_v": 3.92, "sample": true }
+]

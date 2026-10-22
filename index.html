@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตลิ่งคลอง - แผนที่ฉะเชิงเทรา</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  html, body { height: 100%; margin: 0; font-family: system-ui, "Noto Sans Thai", Tahoma, sans-serif; }
+  #map { position: absolute; inset: 0; }
+  .panel { position: absolute; z-index: 1000; top: 10px; left: 10px; width: 270px; max-width: calc(100% - 20px); max-height: calc(100% - 20px); overflow: auto; background: #fff; color: #1b1b1b; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.3); padding: 12px 14px; box-sizing: border-box; font-size: 13px; }
+  .panel h1 { font-size: 16px; margin: 0 0 4px; }
+  .sim { display: inline-block; border: 1px solid #b26a00; color: #b26a00; border-radius: 6px; padding: 1px 6px; font-size: 11px; margin-bottom: 8px; }
+  .st { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; background: #f6f6f6; border: 1px solid #ddd; border-radius: 8px; padding: 6px 8px; margin-top: 6px; cursor: pointer; }
+  .st:hover { background: #eee; }
+  .st .d { width: 12px; height: 12px; border-radius: 50%; flex: none; border: 2px solid #fff; box-shadow: 0 0 0 1px #888; }
+  .st .n { flex: 1; }
+  .st .v { font-variant-numeric: tabular-nums; color: #444; }
+  .legend { margin-top: 10px; display: grid; gap: 3px; }
+  .legend div { display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .note { margin-top: 8px; color: #555; font-size: 11.5px; line-height: 1.45; }
+  .mk { display: flex; align-items: center; transform: translate(-11px, -11px); width: max-content; }
+  .mk .dot { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.45), 0 1px 4px rgba(0,0,0,.4); box-sizing: border-box; flex: none; }
+  .mk .chip { margin-left: 4px; background: #fff; border: 2px solid var(--c); color: #1b1b1b; border-radius: 6px; padding: 1px 6px; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
+  .dl { width: 0; height: 0; }
+  .dl span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-weight: 700; font-size: 11.5px; color: #1b1b1b; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff; pointer-events: none; }
+  .dgrid { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+  .dgrid button { display: flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; background: none; border: 0; padding: 2px 0; text-align: left; cursor: pointer; color: inherit; }
+  .dgrid button:hover { text-decoration: underline; }
+  .dgrid i { width: 12px; height: 12px; border-radius: 3px; flex: none; border: 1px solid rgba(0,0,0,.4); }
+  table.info { margin-top: 6px; border-collapse: collapse; width: 100%; }
+  table.info td { padding: 2px 0; border-bottom: 1px solid #eee; vertical-align: top; }
+  table.info td:last-child { text-align: right; font-weight: 600; padding-left: 10px; white-space: nowrap; }
+  .rid { width: 14px; height: 14px; background: #1565c0; border: 2px solid #fff; box-shadow: 0 0 0 1px #0d3c7a, 0 1px 4px rgba(0,0,0,.4); transform: rotate(45deg); }
+  .h2 { margin-top: 12px; font-weight: 700; font-size: 12.5px; }
+  .xbtn { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #555; }
+  #open { position: absolute; z-index: 1000; top: 10px; left: 10px; display: none; font: inherit; font-weight: 700; background: #fff; color: #1b1b1b; border: 0; border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.3); cursor: pointer; }
+  body.closed .panel { display: none; }
+  body.closed #open { display: block; }
+  #wmsg { margin-top: 6px; font-size: 12px; color: #1d5fa8; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<button id="open">☰ เมนู</button>
+<div class="panel">
+  <button class="xbtn" id="close" title="ปิดแท็บ">×</button>
+  <h1>ตลิ่งคลอง · ฉะเชิงเทรา</h1>
+  <span class="sim" id="simtag">ข้อมูลและตำแหน่งตัวอย่าง ไม่ใช่ค่าที่วัดจริง</span>
+  <div id="list"></div>
+  <div class="legend" id="legend"></div>
+  <div class="h2">เส้นทางน้ำ</div>
+  <div id="wmsg">กำลังโหลด…</div>
+  <div class="h2">สถานีกรมชลประทาน (สีน้ำเงิน ◆)</div>
+  <div id="rmsg">กำลังโหลด…</div>
+  <div class="h2">อำเภอ (กดเพื่อซูมไปที่อำเภอ)</div>
+  <div class="dgrid" id="dgrid"></div>
+  <div class="note">หน้านี้เป็นข้อมูลเสริมสำหรับเฝ้าระวัง ไม่ใช่ระบบเตือนภัยทางการ<br>
+  ขอบเขตจังหวัดและอำเภอ: OpenGISData-Thailand โดย chingchai (CC BY 4.0) ลดรายละเอียดเส้นเพื่อใช้แสดงผล</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ---------- ตั้งค่า ----------
+// เกณฑ์ระดับน้ำ (cm เหนือระดับต่ำสุด) เป็นค่าตัวอย่าง ยังไม่ได้กำหนดสำหรับหน้างานจริง
+const THRESHOLDS = [
+  { name: 'วิกฤต',     cm: 65, color: '#c62828' },
+  { name: 'เตือน',     cm: 50, color: '#ef6c00' },
+  { name: 'เฝ้าระวัง', cm: 30, color: '#f9a825' }
+];
+const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
+
+// สถานี: แก้ lat / lon เป็นพิกัดจริงของจุดที่ปักเสา แล้วลบ sample: true
+// หรือวางไฟล์ stations.json ไว้ข้างไฟล์นี้ (รูปแบบเดียวกัน) หน้าจะอ่านและรีเฟรชทุก 30 วินาที
+let STATIONS = [
+  { id: 'A', name: 'สถานี A', lat: 13.690, lon: 101.045, level_cm: 32.0, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.4, rh: 78, pres_hpa: 1008.6, batt_v: 3.92, sample: true },
+  { id: 'B', name: 'สถานี B', lat: 13.500, lon: 100.995, level_cm: 31.7, min_cm: 0.0, time: '22 ต.ค. 2026 22:00', temp_c: 29.9, rh: 81, pres_hpa: 1008.9, batt_v: 3.85, sample: true },
+  { id: 'C', name: 'สถานี C', lat: 13.800, lon: 101.380, level_cm: 12.4, min_cm: 0.0, time: '22 ต.ค. 2026 21:55', temp_c: 28.7, rh: 74, pres_hpa: 1008.2, batt_v: 4.01, sample: true }
+];
+
+// ---------- ขอบเขต (ฝังไว้) ----------
+const LAYERS = {"prov":{"type":"Feature","properties":{"name":"ฉะเชิงเทรา","area_sqkm":5166.9},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.0495,13.5077],[101.051,13.5048],[101.0362,13.486],[101.0389,13.4789],[101.0222,13.4731],[101.0138,13.4631],[101.0058,13.4594],[100.9962,13.466],[100.9834,13.4637],[100.9702,13.4766],[100.9545,13.4654],[100.93,13.4629],[100.8479,13.4781],[100.8518,13.4842],[100.8718,13.4906],[100.8725,13.5236],[100.8793,13.5458],[100.8902,13.5646],[100.9037,13.5547],[100.9149,13.5713],[100.907,13.5812],[100.907,13.5917],[100.9233,13.5938],[100.9599,13.6332],[100.9627,13.6449],[100.9536,13.6496],[100.9555,13.6628],[100.8878,13.6867],[100.8557,13.7006],[100.9072,13.7867],[100.9306,13.8048],[100.938,13.8146],[100.9073,13.8386],[100.9128,13.8463],[100.9046,13.8485],[100.9135,13.961],[100.9926,13.9705],[101.0223,13.9711],[101.0447,13.9764],[101.1044,13.974],[101.1374,13.9698],[101.1463,13.9622],[101.1542,13.9423],[101.1524,13.9311],[101.1604,13.933],[101.157,13.9201],[101.1522,13.9129],[101.155,13.8969],[101.1455,13.8938],[101.149,13.8883],[101.1599,13.8957],[101.1615,13.8905],[101.1518,13.8795],[101.1411,13.8869],[101.1397,13.8795],[101.1444,13.8717],[101.1604,13.8628],[101.1584,13.8579],[101.1484,13.8547],[101.1496,13.8516],[101.1621,13.853],[101.1673,13.8588],[101.1743,13.8576],[101.1755,13.8617],[101.1837,13.8628],[101.2009,13.8781],[101.2214,13.8769],[101.2204,13.8869],[101.2396,13.8803],[101.2468,13.8756],[101.2466,13.8675],[101.2499,13.8665],[101.2785,13.8786],[101.296,13.8714],[101.3051,13.8753],[101.3268,13.8667],[101.336,13.8705],[101.3361,13.8616],[101.3423,13.8591],[101.3496,13.8699],[101.3754,13.8506],[101.3969,13.8409],[101.4214,13.836],[101.4382,13.8253],[101.4384,13.8302],[101.4699,13.8227],[101.4961,13.803],[101.5389,13.7858],[101.5465,13.7862],[101.5514,13.7947],[101.5599,13.7688],[101.5818,13.7515],[101.5916,13.7362],[101.605,13.7396],[101.6133,13.7361],[101.639,13.7472],[101.6545,13.7382],[101.6658,13.7373],[101.6792,13.7555],[101.7248,13.7553],[101.7414,13.773],[101.757,13.775],[101.7638,13.7697],[101.7621,13.7543],[101.7941,13.733],[101.7926,13.7082],[101.8103,13.6984],[101.8217,13.7055],[101.8354,13.7011],[101.8417,13.6812],[101.8361,13.6735],[101.8382,13.6595],[101.8328,13.6367],[101.8584,13.6363],[101.8645,13.6317],[101.8698,13.605],[101.8842,13.5975],[101.89,13.5823],[101.9148,13.5854],[101.899,13.5508],[101.8738,13.5241],[101.8853,13.5238],[101.8956,13.517],[101.8974,13.5107],[101.8868,13.5014],[101.8811,13.4904],[101.8948,13.4718],[101.9372,13.4781],[101.9361,13.4719],[101.9431,13.4609],[101.9382,13.4508],[101.9435,13.4387],[101.9635,13.4163],[101.9771,13.4087],[101.9732,13.394],[101.982,13.3808],[101.9819,13.3598],[101.9901,13.3533],[101.9856,13.3402],[101.9891,13.334],[101.967,13.3249],[101.9609,13.3093],[101.947,13.2934],[101.9362,13.2948],[101.9282,13.2887],[101.9269,13.2957],[101.9057,13.2875],[101.9057,13.2712],[101.8981,13.2665],[101.8958,13.2509],[101.9006,13.2348],[101.8908,13.2269],[101.8865,13.2361],[101.881,13.2359],[101.879,13.2244],[101.8717,13.2232],[101.8691,13.2503],[101.8612,13.2465],[101.8503,13.2479],[101.8367,13.233],[101.8273,13.2372],[101.819,13.2179],[101.7964,13.2026],[101.7892,13.2022],[101.7729,13.1843],[101.7569,13.1885],[101.7529,13.1813],[101.7409,13.1865],[101.7304,13.1785],[101.7184,13.1813],[101.7121,13.1925],[101.7128,13.2057],[101.7049,13.2084],[101.6933,13.222],[101.6822,13.2522],[101.6731,13.2577],[101.6678,13.2728],[101.6572,13.2755],[101.6398,13.293],[101.6216,13.2982],[101.6171,13.3024],[101.6102,13.2994],[101.5997,13.3026],[101.5977,13.3115],[101.5925,13.3112],[101.5831,13.3214],[101.5804,13.333],[101.5642,13.3313],[101.5567,13.3675],[101.5503,13.367],[101.551,13.3767],[101.5454,13.3773],[101.5475,13.3857],[101.5503,13.3875],[101.5474,13.3951],[101.5333,13.4149],[101.5322,13.4251],[101.5158,13.4196],[101.5108,13.4105],[101.5015,13.41],[101.5001,13.4192],[101.4905,13.4279],[101.4956,13.4365],[101.49,13.4439],[101.4758,13.4358],[101.4679,13.4246],[101.4332,13.4488],[101.401,13.4502],[101.4102,13.4663],[101.4052,13.4726],[101.3939,13.4751],[101.361,13.4635],[101.3511,13.4798],[101.3214,13.4997],[101.2943,13.5269],[101.2943,13.5323],[101.2675,13.5681],[101.2533,13.5647],[101.2469,13.5706],[101.2418,13.569],[101.1953,13.5856],[101.1713,13.5856],[101.1422,13.5896],[101.1292,13.5769],[101.129,13.5693],[101.1215,13.5614],[101.1139,13.5699],[101.093,13.5535],[101.0879,13.5561],[101.0835,13.5525],[101.0685,13.5572],[101.0557,13.5524],[101.0464,13.5596],[101.0411,13.5513],[101.0437,13.5543],[101.0564,13.5464],[101.0572,13.5395],[101.0705,13.5308],[101.0704,13.5179],[101.0658,13.5119],[101.0495,13.5077]]]]}},"dist":{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"code":"2401","name":"เมืองฉะเชิงเทรา","area_sqkm":385.48,"lat":13.718553,"lon":101.014012},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.1306,13.6523],[101.1005,13.6333],[101.0917,13.6356],[101.0862,13.645],[101.0767,13.6411],[101.0679,13.6315],[101.0592,13.6302],[101.0445,13.6404],[101.0314,13.6459],[101.0111,13.6468],[101.0007,13.6501],[100.9923,13.6565],[100.9834,13.6564],[100.9796,13.6757],[100.9691,13.6709],[100.9687,13.6825],[100.9624,13.6865],[100.9635,13.7028],[100.9537,13.7045],[100.949,13.6874],[100.9347,13.6702],[100.8557,13.7006],[100.9072,13.7867],[100.9307,13.8049],[100.9752,13.7708],[100.9834,13.7807],[100.9814,13.7932],[100.9966,13.7991],[101.0156,13.7834],[101.0233,13.7884],[101.0341,13.7794],[101.0386,13.7891],[101.0512,13.7886],[101.0635,13.7968],[101.0697,13.7893],[101.07,13.7758],[101.0778,13.7627],[101.0908,13.7787],[101.0975,13.7764],[101.1109,13.7819],[101.1147,13.7792],[101.1165,13.7601],[101.1268,13.7395],[101.1336,13.7387],[101.1435,13.7088],[101.1369,13.6793],[101.1415,13.6697],[101.1427,13.6521],[101.1306,13.6523]]]]}},{"type":"Feature","properties":{"code":"2402","name":"บางคล้า","area_sqkm":234.34,"lat":13.744899,"lon":101.207166},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.2226,13.6531],[101.2227,13.632],[101.2143,13.6136],[101.1847,13.6239],[101.1721,13.624],[101.166,13.6326],[101.1507,13.6398],[101.1427,13.6521],[101.1415,13.6697],[101.1369,13.6793],[101.1435,13.7088],[101.1518,13.7094],[101.1577,13.6946],[101.1657,13.6976],[101.1688,13.7124],[101.1802,13.714],[101.1847,13.7249],[101.1923,13.7233],[101.2037,13.7252],[101.2097,13.739],[101.1776,13.736],[101.1705,13.7565],[101.1798,13.7609],[101.1824,13.7507],[101.1916,13.7475],[101.1955,13.7542],[101.1935,13.7608],[101.2038,13.7674],[101.2013,13.7804],[101.1911,13.784],[101.197,13.7954],[101.1809,13.7979],[101.1882,13.807],[101.1687,13.8256],[101.1576,13.8262],[101.1624,13.8335],[101.1578,13.8407],[101.1621,13.853],[101.1673,13.8588],[101.1743,13.8576],[101.1755,13.8617],[101.1837,13.8628],[101.2009,13.8781],[101.2214,13.8769],[101.2204,13.8869],[101.2396,13.8803],[101.2468,13.8756],[101.2466,13.8675],[101.2499,13.8665],[101.2486,13.8598],[101.2573,13.84],[101.2508,13.8366],[101.2467,13.8262],[101.2541,13.8262],[101.2556,13.8221],[101.2499,13.8059],[101.2607,13.7995],[101.2594,13.7886],[101.2477,13.7846],[101.2364,13.7872],[101.2374,13.7726],[101.2425,13.7763],[101.2543,13.7664],[101.2468,13.7591],[101.2434,13.7445],[101.2501,13.7364],[101.2426,13.7253],[101.2439,13.7185],[101.2562,13.7095],[101.2562,13.6864],[101.2696,13.6753],[101.2554,13.6665],[101.2509,13.6564],[101.2428,13.6561],[101.2361,13.6658],[101.2228,13.6598],[101.2226,13.6531]]]]}},{"type":"Feature","properties":{"code":"2403","name":"บางน้ำเปรี้ยว","area_sqkm":497.67,"lat":13.882627,"lon":101.029518},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.1041,13.8352],[101.1182,13.7936],[101.1147,13.7792],[101.1109,13.7819],[101.0975,13.7764],[101.0908,13.7787],[101.0778,13.7627],[101.07,13.7758],[101.0697,13.7893],[101.0635,13.7968],[101.0512,13.7886],[101.0386,13.7891],[101.0341,13.7794],[101.0233,13.7884],[101.0156,13.7834],[100.9966,13.7991],[100.9814,13.7932],[100.9834,13.7807],[100.9752,13.7708],[100.9711,13.7734],[100.9307,13.8049],[100.938,13.8146],[100.9073,13.8386],[100.9128,13.8463],[100.9046,13.8485],[100.9135,13.961],[100.9926,13.9705],[101.0223,13.9711],[101.0447,13.9764],[101.1044,13.974],[101.1374,13.9698],[101.1463,13.9622],[101.1542,13.9423],[101.1524,13.9311],[101.1604,13.933],[101.157,13.9201],[101.1522,13.9129],[101.155,13.8969],[101.1455,13.8938],[101.149,13.8883],[101.1599,13.8957],[101.1615,13.8905],[101.1518,13.8795],[101.1411,13.8869],[101.1397,13.8795],[101.1444,13.8717],[101.1604,13.8628],[101.1584,13.8579],[101.1484,13.8547],[101.1496,13.8516],[101.1318,13.8466],[101.1154,13.836],[101.1041,13.8352]]]]}},{"type":"Feature","properties":{"code":"2404","name":"บางปะกง","area_sqkm":260.28,"lat":13.531913,"lon":100.961673},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.0495,13.5077],[101.051,13.5048],[101.0362,13.486],[101.0389,13.4789],[101.0222,13.4731],[101.0138,13.4631],[101.0058,13.4594],[100.9962,13.466],[100.9834,13.4637],[100.9702,13.4766],[100.9545,13.4654],[100.93,13.4629],[100.8479,13.4781],[100.8518,13.4842],[100.8718,13.4906],[100.8725,13.5236],[100.8793,13.5458],[100.8902,13.5646],[100.9037,13.5547],[100.9149,13.5713],[100.907,13.5812],[100.907,13.5917],[100.9233,13.5938],[100.9599,13.6332],[100.9675,13.6285],[100.9669,13.624],[100.981,13.6223],[100.9881,13.6317],[100.994,13.6297],[101.001,13.621],[101.0084,13.6017],[100.9958,13.6019],[100.9984,13.5804],[101.0216,13.5619],[101.0245,13.5527],[101.0323,13.5474],[101.0437,13.5543],[101.0564,13.5464],[101.0572,13.5395],[101.0705,13.5308],[101.0704,13.5179],[101.0658,13.5119],[101.0495,13.5077]]]]}},{"type":"Feature","properties":{"code":"2405","name":"บ้านโพธิ์","area_sqkm":210.19,"lat":13.609318,"lon":101.08138},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.093,13.5535],[101.0879,13.5561],[101.0835,13.5525],[101.0685,13.5572],[101.0557,13.5524],[101.0464,13.5596],[101.0411,13.5513],[101.0323,13.5474],[101.0245,13.5527],[101.0216,13.5619],[100.9984,13.5804],[100.9958,13.6019],[101.0084,13.6017],[101.001,13.621],[100.994,13.6297],[100.9881,13.6317],[100.981,13.6223],[100.9669,13.624],[100.9675,13.6285],[100.9599,13.6332],[100.9627,13.6449],[100.9536,13.6496],[100.9555,13.6628],[100.9347,13.6702],[100.949,13.6874],[100.9537,13.7045],[100.9635,13.7028],[100.9624,13.6865],[100.9687,13.6825],[100.9691,13.6709],[100.9796,13.6757],[100.9834,13.6564],[100.9923,13.6565],[101.0007,13.6501],[101.0111,13.6468],[101.0314,13.6459],[101.0445,13.6404],[101.0592,13.6302],[101.0679,13.6315],[101.0767,13.6411],[101.0862,13.645],[101.0917,13.6356],[101.1005,13.6333],[101.1306,13.6523],[101.1427,13.6521],[101.1507,13.6398],[101.166,13.6326],[101.1721,13.624],[101.1847,13.6239],[101.2143,13.6136],[101.2218,13.6055],[101.2349,13.6031],[101.2382,13.5805],[101.2469,13.5706],[101.2418,13.569],[101.1953,13.5856],[101.1713,13.5856],[101.1422,13.5896],[101.1292,13.5769],[101.129,13.5693],[101.1215,13.5614],[101.1139,13.5699],[101.093,13.5535]]]]}},{"type":"Feature","properties":{"code":"2406","name":"พนมสารคาม","area_sqkm":510.57,"lat":13.739134,"lon":101.412109},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.4456,13.6897],[101.4343,13.6755],[101.4208,13.6722],[101.4227,13.6571],[101.396,13.6098],[101.3835,13.5993],[101.3348,13.6407],[101.2915,13.6558],[101.2822,13.6641],[101.2905,13.6818],[101.2952,13.7364],[101.313,13.742],[101.3135,13.7492],[101.3176,13.7439],[101.3189,13.7522],[101.3084,13.7667],[101.3098,13.7869],[101.3148,13.8008],[101.3303,13.8251],[101.3361,13.8616],[101.3423,13.8591],[101.3496,13.8699],[101.3754,13.8506],[101.3969,13.8409],[101.4214,13.836],[101.4382,13.8253],[101.4384,13.8302],[101.4699,13.8227],[101.4961,13.803],[101.5389,13.7858],[101.5465,13.7862],[101.5514,13.7947],[101.5599,13.7688],[101.5818,13.7515],[101.5916,13.7362],[101.5745,13.7255],[101.5618,13.7253],[101.5468,13.7139],[101.5285,13.7079],[101.5199,13.6994],[101.5202,13.6917],[101.5072,13.6954],[101.5048,13.6794],[101.4761,13.68],[101.4456,13.6897]]]]}},{"type":"Feature","properties":{"code":"2407","name":"ราชสาส์น","area_sqkm":145.23,"lat":13.787869,"lon":101.283305},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.3135,13.7492],[101.313,13.742],[101.2952,13.7364],[101.2905,13.6818],[101.2822,13.6641],[101.2562,13.6864],[101.2562,13.7095],[101.2439,13.7185],[101.2426,13.7253],[101.2501,13.7364],[101.2434,13.7445],[101.2468,13.7591],[101.2543,13.7664],[101.2425,13.7763],[101.2374,13.7726],[101.2364,13.7872],[101.2477,13.7846],[101.2594,13.7886],[101.2607,13.7995],[101.2499,13.8059],[101.2556,13.8221],[101.2541,13.8262],[101.2467,13.8262],[101.2508,13.8366],[101.2573,13.84],[101.2486,13.8598],[101.2499,13.8665],[101.2785,13.8786],[101.296,13.8714],[101.3051,13.8753],[101.3268,13.8667],[101.336,13.8705],[101.3303,13.8251],[101.3148,13.8008],[101.3098,13.7869],[101.3084,13.7667],[101.3189,13.7522],[101.3176,13.7439],[101.3135,13.7492]]]]}},{"type":"Feature","properties":{"code":"2408","name":"สนามชัยเขต","area_sqkm":1062.32,"lat":13.619415,"lon":101.645783},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.5529,13.547],[101.5488,13.5431],[101.5506,13.5326],[101.5419,13.5241],[101.5462,13.5044],[101.5373,13.4983],[101.5325,13.4821],[101.5201,13.4767],[101.5191,13.4697],[101.5085,13.4623],[101.5033,13.4514],[101.4925,13.4493],[101.4794,13.4606],[101.4639,13.462],[101.4608,13.4683],[101.4504,13.463],[101.4472,13.4697],[101.4615,13.4851],[101.4525,13.4953],[101.4501,13.5162],[101.4394,13.5199],[101.4404,13.5244],[101.4242,13.5295],[101.4216,13.5403],[101.4109,13.5471],[101.412,13.558],[101.3976,13.5959],[101.396,13.6098],[101.4227,13.6571],[101.4208,13.6722],[101.4343,13.6755],[101.4456,13.6897],[101.4761,13.68],[101.5048,13.6794],[101.5072,13.6954],[101.5202,13.6917],[101.5199,13.6994],[101.5285,13.7079],[101.5468,13.7139],[101.5618,13.7253],[101.5745,13.7255],[101.5916,13.7362],[101.605,13.7396],[101.6133,13.7361],[101.639,13.7472],[101.6545,13.7382],[101.6658,13.7373],[101.6792,13.7555],[101.7248,13.7553],[101.7414,13.773],[101.757,13.775],[101.7638,13.7697],[101.7621,13.7543],[101.7941,13.733],[101.7926,13.7082],[101.8103,13.6984],[101.8217,13.7055],[101.8354,13.7011],[101.8417,13.6812],[101.8361,13.6735],[101.8382,13.6595],[101.8328,13.6367],[101.8584,13.6363],[101.8645,13.6317],[101.8698,13.605],[101.8842,13.5975],[101.89,13.5823],[101.9148,13.5854],[101.899,13.5508],[101.8738,13.5241],[101.8853,13.5238],[101.8956,13.517],[101.8974,13.5107],[101.8606,13.4834],[101.8417,13.4872],[101.8075,13.5054],[101.7993,13.5264],[101.791,13.5332],[101.7563,13.5439],[101.7435,13.5562],[101.7268,13.5501],[101.72,13.552],[101.6814,13.579],[101.6272,13.6012],[101.6245,13.5993],[101.631,13.5837],[101.6249,13.5806],[101.6205,13.5703],[101.6269,13.5673],[101.6212,13.5506],[101.5819,13.5737],[101.5778,13.5586],[101.5605,13.547],[101.5529,13.547]]]]}},{"type":"Feature","properties":{"code":"2409","name":"แปลงยาว","area_sqkm":329.74,"lat":13.557115,"lon":101.343516},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.412,13.558],[101.4109,13.5471],[101.4216,13.5403],[101.4242,13.5295],[101.4404,13.5244],[101.4394,13.5199],[101.4501,13.5162],[101.4525,13.4953],[101.4615,13.4851],[101.4472,13.4697],[101.4504,13.463],[101.4608,13.4683],[101.4639,13.462],[101.4794,13.4606],[101.4925,13.4493],[101.49,13.4439],[101.4758,13.4358],[101.4679,13.4246],[101.4332,13.4488],[101.401,13.4502],[101.4102,13.4663],[101.4052,13.4726],[101.3939,13.4751],[101.361,13.4635],[101.3511,13.4798],[101.3214,13.4997],[101.2943,13.5269],[101.2943,13.5323],[101.2675,13.5681],[101.2533,13.5647],[101.2469,13.5706],[101.2382,13.5805],[101.2349,13.6031],[101.2218,13.6055],[101.2143,13.6136],[101.2227,13.632],[101.2228,13.6598],[101.2361,13.6658],[101.2428,13.6561],[101.2509,13.6564],[101.2554,13.6665],[101.2696,13.6753],[101.2915,13.6558],[101.3348,13.6407],[101.3835,13.5993],[101.396,13.6098],[101.3976,13.5959],[101.412,13.558]]]]}},{"type":"Feature","properties":{"code":"2410","name":"ท่าตะเกียบ","area_sqkm":1423.56,"lat":13.3922,"lon":101.74173},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.9382,13.4508],[101.9435,13.4387],[101.9635,13.4163],[101.9771,13.4087],[101.9732,13.394],[101.982,13.3808],[101.9819,13.3598],[101.9901,13.3533],[101.9856,13.3402],[101.9891,13.334],[101.967,13.3249],[101.9609,13.3093],[101.947,13.2934],[101.9362,13.2948],[101.9282,13.2887],[101.9269,13.2957],[101.9057,13.2875],[101.9057,13.2712],[101.8981,13.2665],[101.8958,13.2509],[101.9006,13.2348],[101.8908,13.2269],[101.8865,13.2361],[101.881,13.2359],[101.879,13.2244],[101.8717,13.2232],[101.8691,13.2503],[101.8612,13.2465],[101.8503,13.2479],[101.8367,13.233],[101.8273,13.2372],[101.819,13.2179],[101.7964,13.2026],[101.7892,13.2022],[101.7729,13.1843],[101.7569,13.1885],[101.7529,13.1813],[101.7409,13.1865],[101.7304,13.1785],[101.7184,13.1813],[101.7121,13.1925],[101.7128,13.2057],[101.7049,13.2084],[101.6933,13.222],[101.6822,13.2522],[101.6731,13.2577],[101.6678,13.2728],[101.6572,13.2755],[101.6398,13.293],[101.6216,13.2982],[101.6171,13.3024],[101.6102,13.2994],[101.5997,13.3026],[101.5977,13.3115],[101.5925,13.3112],[101.5831,13.3214],[101.5804,13.333],[101.5642,13.3313],[101.5567,13.3675],[101.5503,13.367],[101.551,13.3767],[101.5454,13.3773],[101.5475,13.3857],[101.5503,13.3875],[101.5474,13.3951],[101.5333,13.4149],[101.5322,13.4251],[101.5158,13.4196],[101.5108,13.4105],[101.5015,13.41],[101.5001,13.4192],[101.4905,13.4279],[101.4956,13.4365],[101.49,13.4439],[101.4925,13.4493],[101.5033,13.4514],[101.5085,13.4623],[101.5191,13.4697],[101.5201,13.4767],[101.5325,13.4821],[101.5373,13.4983],[101.5462,13.5044],[101.5419,13.5241],[101.5506,13.5326],[101.5488,13.5431],[101.5529,13.547],[101.5605,13.547],[101.5778,13.5586],[101.5819,13.5737],[101.6212,13.5506],[101.6269,13.5673],[101.6205,13.5703],[101.6249,13.5806],[101.631,13.5837],[101.6245,13.5993],[101.6272,13.6012],[101.6814,13.579],[101.72,13.552],[101.7268,13.5501],[101.7435,13.5562],[101.7563,13.5439],[101.791,13.5332],[101.7993,13.5264],[101.8075,13.5054],[101.8417,13.4872],[101.8606,13.4834],[101.8868,13.5014],[101.8811,13.4904],[101.8948,13.4718],[101.9372,13.4781],[101.9361,13.4719],[101.9431,13.4609],[101.9382,13.4508]]]]}},{"type":"Feature","properties":{"code":"2411","name":"คลองเขื่อน","area_sqkm":107.52,"lat":13.777989,"lon":101.153647},"geometry":{"type":"MultiPolygon","coordinates":[[[[101.1688,13.7124],[101.1657,13.6976],[101.1577,13.6946],[101.1518,13.7094],[101.1435,13.7088],[101.1336,13.7387],[101.1268,13.7395],[101.1165,13.7601],[101.1147,13.7792],[101.1182,13.7936],[101.1041,13.8352],[101.1154,13.836],[101.1318,13.8466],[101.1621,13.853],[101.1578,13.8407],[101.1624,13.8335],[101.1576,13.8262],[101.1687,13.8256],[101.1882,13.807],[101.1809,13.7979],[101.197,13.7954],[101.1911,13.784],[101.2013,13.7804],[101.2038,13.7674],[101.1935,13.7608],[101.1955,13.7542],[101.1916,13.7475],[101.1824,13.7507],[101.1798,13.7609],[101.1705,13.7565],[101.1776,13.736],[101.2097,13.739],[101.2037,13.7252],[101.1923,13.7233],[101.1847,13.7249],[101.1802,13.714],[101.1688,13.7124]]]]}}]}};
+
+// ---------- แผนที่ ----------
+const map = L.map('map', { zoomControl: true, zoomSnap: 0.25 });
+const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19, attribution: '© OpenStreetMap contributors'
+});
+const voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  subdomains: 'abcd', maxZoom: 19, attribution: '© OpenStreetMap contributors © CARTO'
+});
+osm.addTo(map);
+
+const prov = L.geoJSON(LAYERS.prov, {
+  style: { color: '#d32f2f', weight: 3, fill: false },
+  interactive: false
+}).addTo(map);
+// เว้นที่ให้แผงด้านซ้ายบนจอกว้าง
+function fitOpts(pad) {
+  return window.innerWidth > 700
+    ? { paddingTopLeft: [300, pad], paddingBottomRight: [pad, pad] }
+    : { padding: [pad, pad] };
+}
+map.fitBounds(prov.getBounds(), fitOpts(20));
+
+// ทำให้นอกจังหวัดมืดลง
+const world = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
+const holes = [];
+LAYERS.prov.geometry.coordinates.forEach(poly => holes.push(poly[0].map(p => [p[1], p[0]])));
+const mask = L.polygon([world].concat(holes), { stroke: false, fillColor: '#000', fillOpacity: 0.3, interactive: false }).addTo(map);
+
+// สีประจำอำเภอ (เรียงตามรหัสอำเภอ) แก้ได้ตามต้องการ
+const DISTRICT_COLORS = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#8cd17d', '#bab0ac'];
+const colorOf = {};
+LAYERS.dist.features
+  .map(f => f.properties.code).sort()
+  .forEach((code, i) => { colorOf[code] = DISTRICT_COLORS[i % DISTRICT_COLORS.length]; });
+const distLayers = {};
+
+function districtTitle(name) { return name.indexOf('เมือง') === 0 ? name : 'อำเภอ' + name; }
+
+const districts = L.geoJSON(LAYERS.dist, {
+  style: f => ({ color: '#444', weight: 1, fillColor: colorOf[f.properties.code], fillOpacity: 0.38 }),
+  onEachFeature: (f, layer) => {
+    distLayers[f.properties.code] = layer;
+    layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.62, weight: 2 }));
+    layer.on('mouseout', () => districts.resetStyle(layer));
+    layer.on('click', () => {
+      const box = document.createElement('div');
+      const b = document.createElement('b');
+      b.textContent = districtTitle(f.properties.name);
+      box.appendChild(b);
+      box.appendChild(document.createElement('br'));
+      box.appendChild(document.createTextNode('พื้นที่ ' + Number(f.properties.area_sqkm).toLocaleString('th-TH', { maximumFractionDigits: 1 }) + ' ตร.กม.'));
+      layer.bindPopup(box).openPopup();
+    });
+  }
+}).addTo(map);
+
+// ป้ายชื่ออำเภอ แสดงเมื่อซูมใกล้พอ
+const labelLayer = L.layerGroup();
+LAYERS.dist.features.forEach(f => {
+  const icon = L.divIcon({ className: 'dl', html: '<span></span>', iconSize: [0, 0] });
+  const m = L.marker([f.properties.lat, f.properties.lon], { icon: icon, interactive: false, keyboard: false });
+  m.on('add', () => { m.getElement().firstChild.textContent = f.properties.name; });
+  labelLayer.addLayer(m);
+});
+const LABEL_MIN_ZOOM = 9.5;
+function syncLabels() {
+  const on = map.getZoom() >= LABEL_MIN_ZOOM;
+  if (on && !map.hasLayer(labelLayer)) labelLayer.addTo(map);
+  if (!on && map.hasLayer(labelLayer)) map.removeLayer(labelLayer);
+}
+map.on('zoomend', syncLabels);
+syncLabels();
+
+// รายการอำเภอในแผงด้านซ้าย
+(function () {
+  const grid = document.getElementById('dgrid');
+  LAYERS.dist.features.slice().sort((a, c) => a.properties.code < c.properties.code ? -1 : 1).forEach(f => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const sw = document.createElement('i'); sw.style.background = colorOf[f.properties.code];
+    const tx = document.createElement('span'); tx.textContent = f.properties.name;
+    btn.appendChild(sw); btn.appendChild(tx);
+    btn.addEventListener('click', () => {
+      const layer = distLayers[f.properties.code];
+      map.fitBounds(layer.getBounds(), fitOpts(30));
+      layer.fire('click');
+    });
+    grid.appendChild(btn);
+  });
+})();
+
+const stationLayer = L.layerGroup().addTo(map);
+const waterLayer = L.layerGroup().addTo(map);
+const ridLayer = L.layerGroup().addTo(map);
+L.control.layers(
+  { 'OpenStreetMap': osm, 'CARTO Voyager': voyager },
+  { 'อำเภอ': districts, 'เส้นทางน้ำ': waterLayer, 'สถานีกรมชลประทาน': ridLayer, 'สถานี': stationLayer },
+  { collapsed: true, position: 'topright' }
+).addTo(map);
+
+// ---------- ปิด/เปิดแท็บ ----------
+document.getElementById('close').onclick = () => { document.body.classList.add('closed'); };
+document.getElementById('open').onclick = () => { document.body.classList.remove('closed'); };
+
+// ---------- เส้นทางน้ำ (OpenStreetMap ผ่าน Overpass โหลดสดในเบราว์เซอร์) ----------
+(function loadWaterways() {
+  const msg = document.getElementById('wmsg');
+  const b = prov.getBounds();
+  const bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(',');
+  const q = '[out:json][timeout:60];way["waterway"~"^(river|canal|stream)$"](' + bb + ');out geom;';
+  const hosts = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+  const W = { river: [4, '#1565c0'], canal: [2.5, '#1e88e5'], stream: [1.2, '#64b5f6'] };
+  async function go(i) {
+    if (i >= hosts.length) { msg.textContent = 'โหลดเส้นทางน้ำไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต) ลองรีเฟรช'; return; }
+    try {
+      const r = await fetch(hosts[i], { method: 'POST', body: 'data=' + encodeURIComponent(q) });
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      let n = 0;
+      j.elements.forEach(e => {
+        if (!e.geometry) return;
+        const w = W[e.tags && e.tags.waterway] || W.stream;
+        const line = L.polyline(e.geometry.map(p => [p.lat, p.lon]), { color: w[1], weight: w[0], opacity: .85, interactive: !!(e.tags && e.tags.name) });
+        if (e.tags && e.tags.name) line.bindTooltip(e.tags.name, { sticky: true });
+        line.addTo(waterLayer); n++;
+      });
+      msg.textContent = 'แม่น้ำ/คลอง/ลำธาร ' + n + ' เส้น (ที่มา: OpenStreetMap, ODbL) · เส้นอาจขาดบางสาย';
+    } catch (e) { go(i + 1); }
+  }
+  go(0);
+})();
+
+// ---------- สถานีกรมชลประทาน (RID SWOC API โหลดสดในเบราว์เซอร์) ----------
+// ชื่อ field ในเอกสารไม่ระบุตัวสะกดแน่ชัด จึงค้นหาแบบไม่สนตัวพิมพ์เล็กใหญ่
+(function loadRID() {
+  const msg = document.getElementById('rmsg');
+  // เปิดผ่าน serve.py (http://localhost) จะเรียกผ่านตัวกลาง /rid/ ที่อื่น (ไฟล์ตรงๆ, GitHub Pages) จะลองเรียก API ตรง (มักติด CORS)
+  const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const BASE = LOCAL ? '/rid/' : 'https://swoc-api-service.rid.go.th/api/';
+  const rows = j => Array.isArray(j) ? j : (j && (j.data || j.result || j.rows || j.items)) || [];
+  const pick = (o, re) => { for (const k in o) if (re.test(k) && o[k] !== null && o[k] !== '') return o[k]; };
+  const b = prov.getBounds();
+  async function get(name) {
+    const r = await fetch(BASE + name);
+    if (!r.ok) throw new Error(name + ' ' + r.status);
+    return rows(await r.json());
+  }
+  (async () => {
+    try {
+      const [locs, data] = await Promise.all([get('pier-tele-location-master'), get('pier-tele-data')]);
+      const latest = {};
+      data.forEach(d => {
+        const id = String(pick(d, /^(station_?id|id|code|station_?code)$/i));
+        const tm = String(pick(d, /date|time/i) || '');
+        if (!latest[id] || tm > latest[id].tm) latest[id] = { d: d, tm: tm };
+      });
+      let n = 0;
+      locs.forEach(s => {
+        const lat = parseFloat(pick(s, /^lat/i)), lon = parseFloat(pick(s, /^(lon|lng)/i));
+        if (!isFinite(lat) || !isFinite(lon) || !b.contains([lat, lon])) return;
+        const id = String(pick(s, /^(station_?id|id)$/i));
+        const code = String(pick(s, /^(station_?code|code)$/i));
+        const name = pick(s, /name/i) || code || id;
+        const lv = latest[id] || latest[code];
+        const pop = document.createElement('div');
+        const hd = document.createElement('b'); hd.textContent = name; hd.style.color = '#1565c0'; pop.appendChild(hd);
+        const tb = document.createElement('table'); tb.className = 'info';
+        const add = (a, v) => { const tr = document.createElement('tr'); const x = document.createElement('td'); x.textContent = a; const y = document.createElement('td'); y.textContent = v; tr.appendChild(x); tr.appendChild(y); tb.appendChild(tr); };
+        const river = pick(s, /river|basin/i); if (river) add('แม่น้ำ/ลุ่มน้ำ', river);
+        const am = pick(s, /amphoe|district/i), pv = pick(s, /province/i);
+        if (am || pv) add('พื้นที่', [am, pv].filter(Boolean).join(' '));
+        if (lv) {
+          const up = pick(lv.d, /^wl_?up/i), dn = pick(lv.d, /^wl_?down/i);
+          if (up !== undefined) add('ระดับน้ำด้านเหนือ', up + ' m');
+          if (dn !== undefined) add('ระดับน้ำด้านท้าย', dn + ' m');
+          add('อัปเดตล่าสุด', lv.tm);
+        } else add('ระดับน้ำ', 'ไม่มีข้อมูลล่าสุด');
+        pop.appendChild(tb);
+        const nt = document.createElement('div'); nt.className = 'note'; nt.textContent = 'ที่มา: กรมชลประทาน (SWOC) · หน่วยและค่าอ้างอิงเป็นของกรมชลประทาน ไม่ใช่ค่าเดียวกับสถานีของเรา'; pop.appendChild(nt);
+        const icon = L.divIcon({ html: '<div class="rid"></div>', className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+        L.marker([lat, lon], { icon: icon, title: String(name) }).bindPopup(pop, { minWidth: 240 }).addTo(ridLayer);
+        n++;
+      });
+      msg.textContent = n ? ('พบสถานีกรมชลประทานในจังหวัด ' + n + ' แห่ง (อัปเดตทุก 15 นาที)') : 'ไม่พบสถานีโทรมาตรของกรมชลประทานในขอบเขตจังหวัด';
+    } catch (e) {
+      msg.textContent = 'โหลดข้อมูลกรมชลประทานไม่สำเร็จ (' + e.message + ') ' + (LOCAL ? 'ตัวกลางเรียก API ไม่ได้ ดูข้อความใน terminal ที่รัน serve.py' : 'เปิดผ่าน serve.py (python3 serve.py) แล้วเข้า http://localhost:8000/');
+    }
+  })();
+})();
+
+// ---------- สถานี ----------
+function statusOf(cm) {
+  for (const t of THRESHOLDS) if (cm >= t.cm) return t;
+  return NORMAL;
+}
+
+function render() {
+  stationLayer.clearLayers();
+  const list = document.getElementById('list');
+  list.textContent = '';
+  const anySample = STATIONS.some(s => s.sample);
+  document.getElementById('simtag').style.display = anySample ? '' : 'none';
+
+  STATIONS.forEach(s => {
+    const st = statusOf(Number(s.level_cm));
+    const lvl = Number(s.level_cm).toFixed(1);
+
+    const el = document.createElement('div');
+    el.className = 'mk';
+    el.style.setProperty('--c', st.color);
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = st.color;
+    const chip = document.createElement('span'); chip.className = 'chip';
+    chip.textContent = s.name + ' · ' + st.name;
+    el.appendChild(dot); el.appendChild(chip);
+    const icon = L.divIcon({ html: el, className: '', iconSize: [0, 0] });
+    const m = L.marker([s.lat, s.lon], { icon: icon, title: s.name }).addTo(stationLayer);
+
+    const pop = document.createElement('div');
+    const hd = document.createElement('b'); hd.textContent = s.name + ' · ' + st.name; hd.style.color = st.color === '#f9a825' ? '#8a6100' : st.color; pop.appendChild(hd);
+    const rows = [];
+    const num = (v, d) => (v === undefined || v === null || v === '') ? '-' : Number(v).toFixed(d);
+    rows.push(['ระดับน้ำ (เหนือระดับต่ำสุด)', lvl + ' cm']);
+    rows.push(['ระดับน้ำต่ำสุดที่บันทึก', num(s.min_cm, 1) + ' cm']);
+    rows.push(['ระยะเซนเซอร์ถึงผิวน้ำ', num(140 - Number(s.level_cm), 1) + ' cm']);
+    rows.push(['อุณหภูมิ', num(s.temp_c, 1) + ' °C']);
+    rows.push(['ความชื้นสัมพัทธ์', num(s.rh, 0) + ' %']);
+    rows.push(['ความกดอากาศ', num(s.pres_hpa, 1) + ' hPa']);
+    [['L1', 65], ['L2', 80], ['L3', 95]].forEach(p => rows.push(['สกรูวัดระดับ ' + p[0] + ' (' + (p[0] === 'L1' ? 15 : p[0] === 'L2' ? 30 : 45) + ' cm)', Number(s.level_cm) >= p[1] ? 'เปียก' : 'แห้ง']));
+    rows.push(['แบตเตอรี่', num(s.batt_v, 2) + ' V']);
+    rows.push(['อัปเดตล่าสุด', s.time]);
+    const tb = document.createElement('table'); tb.className = 'info';
+    rows.forEach(r => { const tr = document.createElement('tr'); const a1 = document.createElement('td'); a1.textContent = r[0]; const a2 = document.createElement('td'); a2.textContent = r[1]; tr.appendChild(a1); tr.appendChild(a2); tb.appendChild(tr); });
+    pop.appendChild(tb);
+    if (s.sample) { const sm = document.createElement('div'); sm.className = 'note'; sm.textContent = 'ตำแหน่งและค่าเป็นข้อมูลจำลอง'; pop.appendChild(sm); }
+    m.bindPopup(pop, { minWidth: 250 });
+
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'st';
+    const d = document.createElement('span'); d.className = 'd'; d.style.background = st.color;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = s.name;
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = st.name;
+    btn.appendChild(d); btn.appendChild(n); btn.appendChild(v);
+    btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); m.openPopup(); });
+    list.appendChild(btn);
+  });
+}
+
+function renderLegend() {
+  const lg = document.getElementById('legend');
+  lg.textContent = '';
+  const rows = THRESHOLDS.slice().reverse().map(t => ({ c: t.color, text: t.name + ' ตั้งแต่ ' + t.cm + ' cm (เกณฑ์ตัวอย่าง)' }));
+  rows.unshift({ c: NORMAL.color, text: NORMAL.name });
+  rows.forEach(r => {
+    const row = document.createElement('div');
+    const i = document.createElement('i'); i.style.background = r.c;
+    const t = document.createElement('span'); t.textContent = r.text;
+    row.appendChild(i); row.appendChild(t); lg.appendChild(row);
+  });
+}
+
+async function loadLive() {
+  try {
+    const res = await fetch('stations.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) { STATIONS = data; render(); }
+  } catch (e) { /* ไม่มีไฟล์ ใช้ข้อมูลตัวอย่างต่อ */ }
+}
+
+renderLegend();
+render();
+loadLive();
+setInterval(loadLive, 30000);
+</script>
+</body>
+</html>
