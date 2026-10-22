@@ -35,6 +35,10 @@
   table.info { margin-top: 6px; border-collapse: collapse; width: 100%; }
   table.info td { padding: 2px 0; border-bottom: 1px solid #eee; vertical-align: top; }
   table.info td:last-child { text-align: right; font-weight: 600; padding-left: 10px; white-space: nowrap; }
+  .leaflet-control-layers-toggle, .leaflet-retina .leaflet-control-layers-toggle {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23264653' stroke-width='1.7' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='m2 16 10 5 10-5'/%3E%3Cpath d='m2 12 10 5 10-5'/%3E%3Cpath d='M12 3 2 8l10 5 10-5z' fill='%235aaee8'/%3E%3C/svg%3E") !important;
+    background-size: 26px 26px !important;
+  }
   .grp { display: block; width: 100%; text-align: left; font: inherit; font-size: 11.5px; font-weight: 700; color: #555; background: none; border: 0; padding: 8px 0 0; cursor: pointer; }
   .grp:hover { text-decoration: underline; }
   #list .st { margin-top: 4px; padding: 4px 8px; }
@@ -171,11 +175,13 @@ const distLayers = {};
 
 function districtTitle(name) { return name.indexOf('เมือง') === 0 ? name : 'อำเภอ' + name; }
 
+// ปิดสีอำเภอได้จากเมนูเลเยอร์ (เหลือแค่เส้นขอบ)
+let showDistrictColor = true;
 const districts = L.geoJSON(LAYERS.dist, {
-  style: f => ({ color: '#444', weight: 1, fillColor: colorOf[f.properties.code], fillOpacity: 0.38 }),
+  style: f => ({ color: '#444', weight: 1, fillColor: colorOf[f.properties.code], fillOpacity: showDistrictColor ? 0.38 : 0 }),
   onEachFeature: (f, layer) => {
     distLayers[f.properties.code] = layer;
-    layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.62, weight: 2 }));
+    layer.on('mouseover', () => layer.setStyle({ fillOpacity: showDistrictColor ? 0.62 : 0.15, weight: 2 }));
     layer.on('mouseout', () => districts.resetStyle(layer));
     layer.on('click', () => showDistrict(f.properties.code));
   }
@@ -221,9 +227,16 @@ syncChips();
 const stationLayer = L.layerGroup().addTo(map);
 const waterLayer = L.layerGroup().addTo(map);
 const ridLayer = L.layerGroup().addTo(map);
+// เลเยอร์ว่างไว้เป็นสวิตช์ เปิด = มีสีอำเภอ ปิด = เหลือแค่เส้นขอบ
+const colorSwitch = L.layerGroup().addTo(map);
+colorSwitch.on('add remove', e => {
+  showDistrictColor = e.type === 'add';
+  districts.setStyle(f => districts.options.style(f));
+  document.querySelectorAll('.dgrid i').forEach(i => { i.style.opacity = showDistrictColor ? '' : '0.25'; });
+});
 L.control.layers(
   { 'OpenStreetMap': osm, 'CARTO Voyager': voyager },
-  { 'อำเภอ': districts, 'เส้นทางน้ำ': waterLayer, 'สถานีกรมชลประทาน': ridLayer, 'สถานี': stationLayer },
+  { 'อำเภอ': districts, 'สีอำเภอ': colorSwitch, 'เส้นทางน้ำ': waterLayer, 'สถานีกรมชลประทาน': ridLayer, 'สถานี': stationLayer },
   { collapsed: true, position: 'topright' }
 ).addTo(map);
 
