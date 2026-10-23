@@ -88,6 +88,12 @@ function wavePath(amp, len) {
   for (let x = -200; x < 1000; x += len) d += ' q' + len / 4 + ' ' + (-amp) + ' ' + len / 2 + ' 0 t' + len / 2 + ' 0';
   return d + ' L1000 600 L-200 600 Z';
 }
+// สกรูเปียกไหม: ใช้ค่าที่ ESP32 อ่านจริง (l1/l2/l3) ถ้ามี ไม่งั้นคำนวณจากระดับน้ำ
+function screwWet(s, sc) {
+  const real = s[sc.id.toLowerCase()];
+  return typeof real === 'boolean' ? real : Number(s.level_cm) >= sc.cm;
+}
+
 function bankFigure(s, st) {
   const n = bankOf(s), b = BANKS[n];
   const lvl = Number(s.level_cm);
@@ -110,7 +116,7 @@ function bankFigure(s, st) {
     '<rect x="200" y="72" width="44" height="44" fill="#e6f4ea" stroke="#1e7a45" stroke-width="3"/>' +
     '<rect x="573" y="77" width="14" height="15" rx="2" fill="#222"/>' +
     SCREWS.map(sc => {
-      const y = levelY(sc.cm), wet = lvl >= sc.cm;
+      const y = levelY(sc.cm), wet = screwWet(s, sc);
       return '<circle cx="250" cy="' + y + '" r="9" fill="#e8a317" stroke="' + (wet ? '#2f7fc8' : '#8a5a00') + '" stroke-width="' + (wet ? 6 : 2.5) + '"/>' +
         '<text x="226" y="' + (y + 9) + '" text-anchor="end" font-size="26" font-weight="600" style="fill:' + (wet ? '#2f7fc8' : 'var(--muted)') + '">' + sc.id + '</text>';
     }).join('') +
@@ -186,7 +192,7 @@ function render() {
     rows.push(['อุณหภูมิ', num(s.temp_c, 1) + ' °C']);
     rows.push(['ความชื้นสัมพัทธ์', num(s.rh, 0) + ' %']);
     rows.push(['ความกดอากาศ', num(s.pres_hpa, 1) + ' hPa']);
-    [['L1', 65], ['L2', 80], ['L3', 95]].forEach(p => rows.push(['สกรูวัดระดับ ' + p[0] + ' (' + (p[0] === 'L1' ? 15 : p[0] === 'L2' ? 30 : 45) + ' cm)', Number(s.level_cm) >= p[1] ? 'เปียก' : 'แห้ง']));
+    SCREWS.forEach((sc, i) => rows.push(['สกรูวัดระดับ ' + sc.id + ' (' + (15 * (i + 1)) + ' cm)' + (typeof s[sc.id.toLowerCase()] === 'boolean' ? '' : ' · คำนวณ'), screwWet(s, sc) ? 'เปียก' : 'แห้ง']));
     rows.push(['แบตเตอรี่', num(s.batt_v, 2) + ' V']);
     rows.push(['อัปเดตล่าสุด', s.time]);
     const tb = document.createElement('table'); tb.className = 'info';

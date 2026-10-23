@@ -61,6 +61,22 @@ ESP32 ──PATCH /stations/<id>.json──▶ Firebase ◀──GET /stations.j
 
 สถานีที่มีค่าสดจะไม่มีป้าย "ข้อมูลจำลอง" ค่าที่ผิดรูปแบบถูกกรองทิ้งโดย `js/security.js`
 
+### โค้ดบอร์ด (`firmware/taling_station/`)
+
+1. คัดลอก `secrets.example.h` เป็น `secrets.h` แล้วใส่ WiFi และรหัสผ่านบัญชีอุปกรณ์ (`secrets.h` ไม่ขึ้น GitHub)
+2. ตั้ง `STATION_ID` ให้ตรงกับรหัสในวงเล็บบนเว็บ และ `SENSOR_HEIGHT_CM` = 90 + ความสูงตลิ่ง h
+3. ติดตั้งไลบรารี ArduinoJson, Adafruit BME280, Adafruit Unified Sensor แล้วอัปโหลดด้วยบอร์ด ESP32 Dev Module
+4. เปิด Serial Monitor (115200) จะเห็นค่าที่ส่งและผลตอบกลับจาก Firebase
+
+| อุปกรณ์ | ขา ESP32 |
+| --- | --- |
+| JSN-SR04T Trig / Echo | 5 / 18 (Echo 5V ต้องแบ่งแรงดันเหลือ 3.3V) |
+| BME280 SDA / SCL | 21 / 22 |
+| สกรู L1 / L2 / L3 | 32 / 33 / 25 (สายกลาง GND อยู่ต่ำกว่า L1 เปียก = LOW) |
+| แบตเตอรี่ (ผ่านตัวแบ่ง 1:2) | 34 |
+
+บอร์ดส่ง `l1`, `l2`, `l3` (true = เปียก) ด้วย เว็บจะแสดงค่าจริงนี้แทนการคำนวณจากระดับน้ำ
+
 ## ความปลอดภัย
 
 - **Content-Security-Policy** (ใน `index.html`): รันได้เฉพาะสคริปต์ของเว็บนี้กับ Leaflet จาก cdnjs ห้ามสคริปต์ที่ฝังในหน้า และเรียกข้อมูลได้เฉพาะ Overpass กับ API กรมชลประทาน

@@ -40,6 +40,8 @@ function sanitizeStation(raw) {
     batt_v: safeNum(raw.batt_v, 0, 20),
     sample: raw.sample === true
   };
+  // สกรู L1-L3 ที่ ESP32 อ่านได้จริง (true = เปียก) ไม่ส่งมา = ใช้ระดับน้ำคำนวณแทน
+  ['l1', 'l2', 'l3'].forEach(k => { if (typeof raw[k] === 'boolean') s[k] = raw[k]; });
   const bank = safeNum(raw.bank, 1, 5);
   if (bank !== undefined) s.bank = Math.round(bank);
   return s;
