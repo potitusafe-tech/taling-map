@@ -8,7 +8,9 @@
   const bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(',');
   const q = '[out:json][timeout:60];way["waterway"~"^(river|canal|stream)$"](' + bb + ');out geom;';
   const hosts = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
-  const W = { river: [2, '#5aaee8'], canal: [1.3, '#7fc4f2'], stream: [0.7, '#a9d8f7'] };
+  // เส้นบางและจาง วาดใต้สีอำเภอ (pane 'water') ให้ดูเป็นส่วนหนึ่งของแผนที่
+  const W = { river: [1.2, '#4a9bd6'], canal: [0.8, '#6fb4e6'], stream: [0.5, '#8cc6ee'] };
+  if (!map.getPane('water')) map.createPane('water').style.zIndex = 390;
   async function go(i) {
     if (i >= hosts.length) { msg.textContent = 'โหลดเส้นทางน้ำไม่สำเร็จ (ต้องต่ออินเทอร์เน็ต) ลองรีเฟรช'; return; }
     try {
@@ -19,8 +21,7 @@
       j.elements.forEach(e => {
         if (!e.geometry) return;
         const w = W[e.tags && e.tags.waterway] || W.stream;
-        const line = L.polyline(e.geometry.map(p => [p.lat, p.lon]), { color: w[1], weight: w[0], opacity: .85, interactive: !!(e.tags && e.tags.name) });
-        if (e.tags && e.tags.name) { const tt = document.createElement('span'); tt.textContent = safeText(e.tags.name, 80); line.bindTooltip(tt, { sticky: true }); }
+        const line = L.polyline(e.geometry.map(p => [p.lat, p.lon]), { pane: 'water', color: w[1], weight: w[0], opacity: .7, interactive: false });
         line.addTo(waterLayer); n++;
       });
       msg.textContent = 'แม่น้ำ/คลอง/ลำธาร ' + n + ' เส้น (ที่มา: OpenStreetMap, ODbL) · เส้นอาจขาดบางสาย';
