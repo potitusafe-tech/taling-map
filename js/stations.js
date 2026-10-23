@@ -24,6 +24,9 @@ const distName = {};
 LAYERS.dist.features.forEach(f => { distName[f.properties.code] = f.properties.name; });
 const markerById = {};
 
+// ชื่อสถานีพร้อมรหัสในวงเล็บ เช่น แม่น้ำบางปะกง (2401-1) ใช้รหัสนี้เป็น STATION_ID ใน ESP32
+function stationLabel(s) { return s.name + ' (' + s.id + ')'; }
+
 function colorText(st) { return st.color === '#f9a825' && !isDark() ? '#8a6100' : st.color; }
 
 // กดอำเภอ: ซูมไปที่อำเภอ แล้วสรุปสถานีในอำเภอนั้น
@@ -58,7 +61,7 @@ function showDistrict(code) {
       const a = document.createElement('td');
       const btn = document.createElement('button'); btn.type = 'button';
       const dot = document.createElement('i'); dot.style.background = st.color;
-      btn.appendChild(dot); btn.appendChild(document.createTextNode(s.name));
+      btn.appendChild(dot); btn.appendChild(document.createTextNode(stationLabel(s)));
       btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); markerById[s.id].openPopup(); });
       a.appendChild(btn);
       const lv = document.createElement('td'); lv.textContent = Number(s.level_cm).toFixed(1) + ' cm';
@@ -166,14 +169,14 @@ function render() {
     el.style.setProperty('--c', st.color);
     const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = st.color;
     const chip = document.createElement('span'); chip.className = 'chip';
-    chip.textContent = s.name + ' · ' + st.name;
+    chip.textContent = stationLabel(s) + ' · ' + st.name;
     el.appendChild(dot); el.appendChild(chip);
     const icon = L.divIcon({ html: el, className: '', iconSize: [0, 0] });
-    const m = L.marker([s.lat, s.lon], { icon: icon, title: s.name }).addTo(stationLayer);
+    const m = L.marker([s.lat, s.lon], { icon: icon, title: stationLabel(s) }).addTo(stationLayer);
     markerById[s.id] = m;
 
     const pop = document.createElement('div');
-    const hd = document.createElement('b'); hd.textContent = s.name + ' · ' + st.name; hd.style.color = colorText(st); pop.appendChild(hd);
+    const hd = document.createElement('b'); hd.textContent = stationLabel(s) + ' · ' + st.name; hd.style.color = colorText(st); pop.appendChild(hd);
     if (code) { const dn = document.createElement('div'); dn.className = 'note'; dn.style.marginTop = '0'; dn.textContent = districtTitle(distName[code]); pop.appendChild(dn); }
     const rows = [];
     const num = (v, d) => (v === undefined || v === null || v === '') ? '-' : Number(v).toFixed(d);
@@ -204,7 +207,7 @@ function render() {
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'st';
     const d = document.createElement('span'); d.className = 'd'; d.style.background = st.color;
-    const n = document.createElement('span'); n.className = 'n'; n.textContent = s.name;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = stationLabel(s);
     const v = document.createElement('span'); v.className = 'v'; v.textContent = st.name;
     btn.appendChild(d); btn.appendChild(n); btn.appendChild(v);
     btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); m.openPopup(); });
