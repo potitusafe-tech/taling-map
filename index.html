@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- ความปลอดภัย: อนุญาตเฉพาะสคริปต์ของเว็บนี้กับ Leaflet จาก cdnjs และเรียกข้อมูลได้เฉพาะเซิร์ฟเวอร์ที่ใช้จริง -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://server.arcgisonline.com https://tile.openstreetmap.org https://cdnjs.cloudflare.com; connect-src 'self' https://overpass-api.de https://overpass.kumi.systems https://swoc-api-service.rid.go.th; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https://server.arcgisonline.com https://tile.openstreetmap.org https://cdnjs.cloudflare.com; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://overpass-api.de https://overpass.kumi.systems https://swoc-api-service.rid.go.th; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>ตลิ่งคลอง - แผนที่ฉะเชิงเทรา</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
@@ -24,6 +24,7 @@
     <button type="button" data-theme="dark" aria-pressed="false">มืด</button>
   </div>
   <span class="sim" id="simtag">ข้อมูลและตำแหน่งตัวอย่าง ไม่ใช่ค่าที่วัดจริง</span>
+  <div class="live" id="livemsg" data-state="off">กำลังตรวจการเชื่อมต่อ…</div>
   <div id="list"></div>
   <div class="legend" id="legend"></div>
   <div class="h2">เส้นทางน้ำ</div>

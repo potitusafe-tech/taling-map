@@ -39,6 +39,28 @@ stations.example.json   ตัวอย่างรูปแบบ stations.json
 - สีอำเภอ: `DISTRICT_COLORS` ใน `js/config.js`
 - สีหน้าเว็บ: ตัวแปรบนสุดของ `css/style.css`
 
+## ข้อมูลสดจาก ESP32
+
+ESP32 ส่งค่าที่วัดไป Firebase Realtime Database แล้วหน้าเว็บอ่านทุก 30 วินาที
+
+```
+ESP32 ──PATCH /stations/<id>.json──▶ Firebase ◀──GET /stations.json── หน้าเว็บ
+```
+
+1. สร้าง Realtime Database ใน Firebase และตั้ง Rules ให้อ่านได้ทุกคน เขียนได้เฉพาะอุปกรณ์ที่ล็อกอิน:
+   ```json
+   { "rules": { "stations": { ".read": true, "$id": { ".write": "auth != null" } } } }
+   ```
+2. ใส่ URL ของ database ใน `js/config.js` → `LIVE.firebaseUrl` (ใส่แค่ URL ห้ามใส่ API Key หรือรหัสผ่าน)
+3. ESP32 ส่ง JSON ไปที่ `/stations/<id>.json` โดย `<id>` ตรงกับ id ใน `data/stations.js` เช่น `2401-1`:
+   ```json
+   { "level_cm": 34.2, "temp_c": 29.4, "rh": 78, "pres_hpa": 1008.6, "batt_v": 3.92, "time": "23/10/2026 10:15" }
+   ```
+   `level_cm` = 140 − ระยะที่ JSN-SR04T วัดได้ (cm) · ตำแหน่ง ชื่อ และแบบตลิ่งมาจาก `data/stations.js` ไม่ต้องส่ง
+   ถ้าส่ง id ใหม่พร้อม `lat`, `lon`, `name` จะขึ้นเป็นสถานีใหม่
+
+สถานีที่มีค่าสดจะไม่มีป้าย "ข้อมูลจำลอง" ค่าที่ผิดรูปแบบถูกกรองทิ้งโดย `js/security.js`
+
 ## ความปลอดภัย
 
 - **Content-Security-Policy** (ใน `index.html`): รันได้เฉพาะสคริปต์ของเว็บนี้กับ Leaflet จาก cdnjs ห้ามสคริปต์ที่ฝังในหน้า และเรียกข้อมูลได้เฉพาะ Overpass กับ API กรมชลประทาน

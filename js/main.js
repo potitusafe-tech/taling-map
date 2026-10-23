@@ -27,4 +27,4 @@ STATIONS = sanitizeStations(STATIONS);
 renderLegend();
 applyTheme();
 loadLive();
-setInterval(loadLive, 30000);
+setInterval(loadLive, Math.max(10, Number(LIVE.refreshSec) || 30) * 1000);

@@ -10,6 +10,14 @@ const THRESHOLDS = [
 ];
 const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 
+// ข้อมูลสดจาก ESP32 ผ่าน Firebase Realtime Database
+// ใส่ URL ของ database (ไม่ต้องมี / ท้าย) เช่น 'https://taling-xxxx-default-rtdb.asia-southeast1.firebasedatabase.app'
+// ว่างไว้ = ใช้ข้อมูลใน data/stations.js อย่างเดียว · ห้ามใส่ API Key หรือรหัสผ่านในไฟล์นี้
+const LIVE = {
+  firebaseUrl: '',
+  refreshSec: 30
+};
+
 // ขอบเขตที่เลื่อนแผนที่ได้: ฉะเชิงเทราและจังหวัดที่ติดกัน (กรอบสี่เหลี่ยมคร่าวๆ)
 const REGION = L.latLngBounds([12.2, 100.25], [14.6, 102.95]);
 

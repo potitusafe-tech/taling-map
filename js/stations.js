@@ -226,12 +226,59 @@ function renderLegend() {
   });
 }
 
+// ---------- ข้อมูลสด ----------
+// ลำดับ: Firebase (ถ้าตั้ง LIVE.firebaseUrl) → stations.json ข้าง index.html → data/stations.js
+// ESP32 ส่งแค่ค่าที่วัด (level_cm, temp_c, ...) ไปที่ /stations/<id> ตำแหน่ง ชื่อ และแบบตลิ่งมาจาก data/stations.js
+let baseStations = null;
+
+function firebaseBase() {
+  const u = String(LIVE.firebaseUrl || '').trim().replace(/\/+$/, '');
+  return /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/.test(u) ? u : '';
+}
+
+// รวมค่าสดเข้ากับสถานีเดิมด้วย id; id ใหม่ที่ส่ง lat/lon มาด้วยจะถูกเพิ่มเป็นสถานีใหม่
+function mergeLive(base, live) {
+  const byId = {};
+  base.forEach(s => { byId[s.id] = Object.assign({}, s); });
+  Object.keys(live || {}).forEach(id => {
+    const v = live[id];
+    if (!v || typeof v !== 'object') return;
+    const merged = Object.assign({}, byId[id] || {}, v, { id: id, sample: false });
+    if (v.level_cm === undefined && byId[id]) merged.level_cm = byId[id].level_cm;
+    byId[id] = merged;
+  });
+  return sanitizeStations(Object.keys(byId).map(k => byId[k]));
+}
+
+function setLiveMsg(text, ok) {
+  const el = document.getElementById('livemsg');
+  if (!el) return;
+  el.textContent = text;
+  el.dataset.state = ok ? 'ok' : 'off';
+}
+
 async function loadLive() {
+  if (!baseStations) baseStations = STATIONS.slice();
+  const fb = firebaseBase();
+  if (fb) {
+    try {
+      const res = await fetch(fb + '/stations.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const clean = mergeLive(baseStations, data && typeof data === 'object' ? data : {});
+      const n = Object.keys(data || {}).filter(id => clean.some(s => s.id === id)).length;
+      STATIONS = clean; render();
+      setLiveMsg('ข้อมูลสดจาก ESP32: ' + n + ' สถานี · อ่านล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), true);
+    } catch (e) {
+      setLiveMsg('เชื่อมต่อ Firebase ไม่ได้ (' + safeText(e.message, 40) + ') แสดงค่าล่าสุดที่มี', false);
+    }
+    return;
+  }
+  setLiveMsg(LIVE.firebaseUrl ? 'URL ของ Firebase ใน js/config.js ไม่ถูกรูปแบบ' : 'ยังไม่ได้เชื่อม ESP32 (ตั้ง LIVE.firebaseUrl ใน js/config.js)', false);
   try {
     const res = await fetch('stations.json', { cache: 'no-store' });
     if (!res.ok) return;
-    const data = await res.json();
-    const clean = sanitizeStations(data);
+    const clean = sanitizeStations(await res.json());
     if (clean.length) { STATIONS = clean; render(); }
   } catch (e) { /* ไม่มีไฟล์ ใช้ข้อมูลตัวอย่างต่อ */ }
 }
