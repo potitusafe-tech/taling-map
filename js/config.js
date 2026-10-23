@@ -14,7 +14,7 @@ const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 // ใส่ URL ของ database (ไม่ต้องมี / ท้าย) เช่น 'https://taling-xxxx-default-rtdb.asia-southeast1.firebasedatabase.app'
 // ว่างไว้ = ใช้ข้อมูลใน data/stations.js อย่างเดียว · ห้ามใส่ API Key หรือรหัสผ่านในไฟล์นี้
 const LIVE = {
-  firebaseUrl: '',
+  firebaseUrl: 'https://taling-map-default-rtdb.asia-southeast1.firebasedatabase.app',
   refreshSec: 30
 };
 
