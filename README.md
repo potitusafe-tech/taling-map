@@ -77,6 +77,23 @@ ESP32 ──PATCH /stations/<id>.json──▶ Firebase ◀──GET /stations.j
 
 บอร์ดส่ง `l1`, `l2`, `l3` (true = เปียก) ด้วย เว็บจะแสดงค่าจริงนี้แทนการคำนวณจากระดับน้ำ
 
+### แบบสองบอร์ด: สถานี → ตัวกลาง → เว็บ (`firmware/taling_node/`, `firmware/taling_gateway/`)
+
+ใช้เมื่อที่เสาไม่มี WiFi: บอร์ดที่เสา (node) ส่งให้บอร์ดตัวกลาง (gateway) ด้วย ESP-NOW (ระยะโล่งราว 100–200 m) แล้ว gateway ที่ต่อ WiFi ส่งขึ้น Firebase
+
+```
+[node ที่เสา] --ESP-NOW--> [gateway + WiFi] --HTTPS--> Firebase --> หน้าเว็บ
+```
+
+1. **gateway ก่อน**: คัดลอก `taling_gateway/secrets.example.h` เป็น `secrets.h` ใส่ WiFi และรหัสบัญชีอุปกรณ์ แล้วอัปโหลด
+   เปิด Serial Monitor (115200) จด `MAC ของ gateway` ที่พิมพ์ออกมา
+2. **node**: ใส่ MAC นั้นใน `GATEWAY_MAC` ของ `taling_node.ino` ตั้ง `STATION_ID` แล้วอัปโหลด
+   `TEST_MODE 1` ส่งค่าจำลอง (น้ำขึ้นลง 10–90 cm) ทดสอบได้โดยไม่ต้องต่อเซนเซอร์ · `TEST_MODE 0` อ่านเซนเซอร์จริง
+3. node หาช่อง WiFi ของ gateway เอง Serial ของ node ขึ้น `gateway ได้รับ` และ Serial ของ gateway ขึ้น `-> Firebase 200`
+4. เปิดเว็บ สถานีนั้นจะเปลี่ยนตามทุก 30 วินาที
+
+`NET_KEY` ต้องตรงกันทั้งสองบอร์ด gateway ทิ้งข้อมูลที่ไม่ตรง (กันบอร์ดอื่นแถวนั้นส่งมั่ว แต่ไม่ใช่การเข้ารหัส)
+
 ## ความปลอดภัย
 
 - **Content-Security-Policy** (ใน `index.html`): รันได้เฉพาะสคริปต์ของเว็บนี้กับ Leaflet จาก cdnjs ห้ามสคริปต์ที่ฝังในหน้า และเรียกข้อมูลได้เฉพาะ Overpass กับ API กรมชลประทาน
