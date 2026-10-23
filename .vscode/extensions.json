@@ -1,0 +1,6 @@
+{
+  // เปิดโปรเจกต์นี้แล้ว VS Code จะแนะนำให้ติดตั้ง Live Preview (ของ Microsoft) สำหรับปุ่ม Show Preview
+  "recommendations": [
+    "ms-vscode.live-server"
+  ]
+}

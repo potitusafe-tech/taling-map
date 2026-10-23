@@ -1,0 +1,7 @@
+{
+  // Live Preview: เปิด index.html เป็นหน้าแรก และรีเฟรชเองทุกครั้งที่แก้ไฟล์ (ไม่ต้องรอกดบันทึก)
+  "livePreview.defaultPreviewPath": "/index.html",
+  "livePreview.autoRefreshPreview": "On All Changes in Editors",
+  "livePreview.openPreviewTarget": "Embedded Preview",
+  "livePreview.portNumber": 3000
+}
