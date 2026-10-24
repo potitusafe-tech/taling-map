@@ -15,6 +15,20 @@
 <body>
 <div id="map"></div>
 <button id="open">☰ เมนู</button>
+
+<!-- ติดต่อฝ่ายช่วยเหลือ: แยกจากแผงข้อมูล อยู่มุมขวาล่าง -->
+<button id="support-btn" class="support-btn" type="button" aria-haspopup="dialog" aria-controls="support">✉ ติดต่อเรา</button>
+<div id="support" class="support" role="dialog" aria-labelledby="support-title" hidden>
+  <button class="xbtn" id="support-close" type="button" aria-label="ปิด">×</button>
+  <h2 id="support-title">ติดต่อฝ่ายช่วยเหลือ</h2>
+  <p>แจ้งปัญหา ข้อมูลสถานีผิดปกติ หรือสอบถามเกี่ยวกับระบบ</p>
+  <div class="support-email">
+    <span id="support-email">potitusafe@gmail.com</span>
+    <button id="support-copy" type="button">คัดลอก</button>
+  </div>
+  <a id="support-mail" class="support-send" href="mailto:potitusafe@gmail.com?subject=%E0%B8%95%E0%B8%A5%E0%B8%B4%E0%B9%88%E0%B8%87%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%3A%20%E0%B9%81%E0%B8%88%E0%B9%89%E0%B8%87%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2">ส่งอีเมล</a>
+  <p class="note">ถ้ากดแล้วไม่มีแอปอีเมลเปิดขึ้นมา ให้คัดลอกอีเมลไปส่งเอง และบอกรหัสสถานีในวงเล็บ เช่น (2401-1) ด้วย</p>
+</div>
 <div class="panel">
   <button class="xbtn" id="close" title="ปิดแท็บ">×</button>
   <h1>ตลิ่งคลอง · ฉะเชิงเทรา</h1>
