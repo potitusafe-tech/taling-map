@@ -19,7 +19,7 @@
 // ---------- ค่าที่แก้ ----------
 #define TEST_MODE 1                         // 1 = ค่าจำลอง (ไม่ต้องต่อเซนเซอร์), 0 = อ่านเซนเซอร์จริง
 const char* STATION_ID = "2401-1";          // ต้องตรงกับรหัสในวงเล็บบนเว็บ
-uint8_t GATEWAY_MAC[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};   // MAC ของ gateway (ดูจาก Serial ของ gateway)
+uint8_t GATEWAY_MAC[6] = {0x20, 0x9B, 0xA9, 0x7C, 0xDA, 0x44};   // MAC ของ gateway (บอร์ด ESP32 ตัวแรกที่ต่อ COM4) เปลี่ยนถ้าใช้บอร์ดอื่น
 const uint32_t NET_KEY = 20261023;          // ตัวเลขลับร่วมกับ gateway
 const float SENSOR_HEIGHT_CM = 140.0;       // 90 cm + ความสูงตลิ่ง h
 const int   SEND_EVERY_SEC = 30;
