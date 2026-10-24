@@ -18,7 +18,25 @@
 <!-- กลุ่ม Telegram ที่ gateway ส่งแจ้งเตือนเข้า: อยู่เหนือปุ่มติดต่อเรา -->
 <a id="tg-btn" class="tg-btn" href="https://t.me/+tauKO8CfuJ5kZTll" target="_blank" rel="noopener noreferrer">✈ กลุ่มติดตามสถานการณ์</a>
 <!-- ติดต่อฝ่ายช่วยเหลือ: แยกจากแผงข้อมูล อยู่มุมขวาล่าง -->
-<button id="support-btn" class="support-btn" type="button" aria-haspopup="dialog" aria-controls="support">✉ ติดต่อเรา</button>
+<div class="fabs">
+  <button id="emer-btn" class="emer-btn" type="button" aria-haspopup="dialog" aria-controls="emer">📞 เบอร์ฉุกเฉิน</button>
+  <button id="support-btn" class="support-btn" type="button" aria-haspopup="dialog" aria-controls="support">✉ ติดต่อเรา</button>
+</div>
+<!-- เบอร์ฉุกเฉินระดับประเทศ (โทรฟรี 24 ชม.) กดแล้วโทรออกได้เลยบนมือถือ -->
+<div id="emer" class="support emer" role="dialog" aria-labelledby="emer-title" hidden>
+  <button class="xbtn" id="emer-close" type="button" aria-label="ปิด">×</button>
+  <h2 id="emer-title">เบอร์โทรฉุกเฉิน</h2>
+  <p>กดที่เบอร์เพื่อโทรออก (บนมือถือ)</p>
+  <ul class="tel-list">
+    <li><a href="tel:1784"><b>1784</b><span>ปภ. ป้องกันและบรรเทาสาธารณภัย · น้ำท่วม อุทกภัย</span></a></li>
+    <li><a href="tel:1669"><b>1669</b><span>เจ็บป่วยฉุกเฉิน · รถพยาบาล กู้ชีพ</span></a></li>
+    <li><a href="tel:191"><b>191</b><span>เหตุด่วนเหตุร้าย · ตำรวจ</span></a></li>
+    <li><a href="tel:199"><b>199</b><span>ดับเพลิง · กู้ภัย</span></a></li>
+    <li><a href="tel:1460"><b>1460</b><span>กรมชลประทาน · สอบถามสถานการณ์น้ำ</span></a></li>
+    <li><a href="tel:1182"><b>1182</b><span>กรมอุตุนิยมวิทยา · พยากรณ์อากาศ พายุ</span></a></li>
+  </ul>
+  <p class="note">หน่วยกู้ภัยและ อปพร. ในพื้นที่ ติดต่อผ่าน 1784 หรือ 199 จะส่งต่อให้หน่วยที่ใกล้ที่สุด</p>
+</div>
 <div id="support" class="support" role="dialog" aria-labelledby="support-title" hidden>
   <button class="xbtn" id="support-close" type="button" aria-label="ปิด">×</button>
   <h2 id="support-title">ติดต่อฝ่ายช่วยเหลือ</h2>

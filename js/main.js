@@ -8,7 +8,7 @@
   const copy = document.getElementById('support-copy');
   const email = document.getElementById('support-email').textContent.trim();
   const show = open => { box.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if (open) copy.focus(); else btn.focus(); };
-  btn.addEventListener('click', () => show(box.hidden));
+  btn.addEventListener('click', () => { if (box.hidden) closeEmer(); show(box.hidden); });
   document.getElementById('support-close').addEventListener('click', () => show(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) show(false); });
   copy.addEventListener('click', () => {
@@ -19,6 +19,28 @@
     };
     if (navigator.clipboard) navigator.clipboard.writeText(email).then(done, fallback); else fallback();
   });
+})();
+
+// ---------- เบอร์ฉุกเฉิน ---------- (เปิดได้ทีละกล่องกับติดต่อเรา)
+function closeEmer() {
+  const box = document.getElementById('emer');
+  if (box.hidden) return;
+  box.hidden = true;
+  document.getElementById('emer-btn').setAttribute('aria-expanded', 'false');
+}
+(function () {
+  const btn = document.getElementById('emer-btn');
+  const box = document.getElementById('emer');
+  btn.addEventListener('click', () => {
+    if (!box.hidden) { closeEmer(); return; }
+    const sup = document.getElementById('support');
+    if (!sup.hidden) { sup.hidden = true; document.getElementById('support-btn').setAttribute('aria-expanded', 'false'); }
+    box.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    box.querySelector('.tel-list a').focus();
+  });
+  document.getElementById('emer-close').addEventListener('click', () => { closeEmer(); btn.focus(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) { closeEmer(); btn.focus(); } });
 })();
 
 // ---------- โหมดมืด/สว่าง ----------

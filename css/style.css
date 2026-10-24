@@ -147,7 +147,20 @@ table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums
 .trend-foot { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
 /* ติดต่อฝ่ายช่วยเหลือ: มุมขวาล่าง เหนือแถบเมนูและเครดิตแผนที่ */
-.support-btn { position: absolute; z-index: 1001; right: 10px; bottom: calc(var(--sheet-h, 0px) + 28px); transition: bottom .28s cubic-bezier(.25,.8,.3,1); font: inherit; font-size: 13px; font-weight: 700; background: var(--seg); color: var(--seg-fg); border: 0; border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
+/* ปุ่มลอยมุมขวาล่าง: เบอร์ฉุกเฉิน + ติดต่อเรา อยู่แถวเดียวกัน */
+.fabs { position: absolute; z-index: 1001; right: 10px; bottom: calc(var(--sheet-h, 0px) + 28px); transition: bottom .28s cubic-bezier(.25,.8,.3,1); display: flex; gap: 8px; }
+.emer-btn { font: inherit; font-size: 13px; font-weight: 700; background: #c62828; color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; white-space: nowrap; }
+.emer-btn:hover { filter: brightness(1.1); }
+.emer-btn:focus-visible { outline: 3px solid var(--simc); outline-offset: 2px; }
+.tel-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tel-list a { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--fg); background: var(--btn); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.tel-list a:hover { background: var(--btn-h); }
+.tel-list a:focus-visible { outline: 3px solid var(--simc); outline-offset: 1px; }
+.tel-list b { flex: none; min-width: 44px; font-size: 17px; color: #c62828; font-variant-numeric: tabular-nums; }
+:root[data-theme="dark"] .tel-list b { color: #ef6b6b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tel-list b { color: #ef6b6b; } }
+.tel-list span { font-size: 12px; color: var(--sub); line-height: 1.35; }
+.support-btn { font: inherit; white-space: nowrap; font-size: 13px; font-weight: 700; background: var(--seg); color: var(--seg-fg); border: 0; border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
 .support-btn:hover { filter: brightness(1.08); }
 /* ปุ่มตำแหน่งของฉัน (js/locate.js) และจุดสีฟ้า */
 .leaflet-bar a.locate-btn { display: grid; place-items: center; }
