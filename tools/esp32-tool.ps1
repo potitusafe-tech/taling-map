@@ -35,13 +35,48 @@ function Show-Status {
   Write-Host ''
 }
 
+# บรรทัดที่อ่านออก: อักษรที่พิมพ์ได้/ภาษาไทยเกือบทั้งหมด และมีคำที่บอร์ดเราพิมพ์จริง
+function Test-CleanLine([string]$s) {
+  if ($s.Length -lt 4) { return $false }
+  $bad = ([regex]::Matches($s, '[^\x20-\x7E฀-๿—→↕]')).Count
+  if ($bad / $s.Length -gt 0.05) { return $false }
+  return $s -match '[฀-๿]|#\d+|Firebase|WiFi|MAC|gateway|node|ESP-NOW|BME280|E \(\d+\)'
+}
+
+# อ่านพอร์ตเองแทน serial monitor: ไม่กระตุก DTR/RTS (บอร์ดไม่รีเซ็ต), ทิ้งขยะจากสัญญาณรบกวน, ไม่พิมพ์บรรทัดซ้ำติดกัน
 function Watch-Board($role) {
   $b = Find-Boards
   $port = $b[$role]
   if (-not $port) { Write-Host "  ไม่พบบอร์ด $role ที่ต่อกับคอม" -ForegroundColor Yellow; return }
-  Write-Host "  กำลังดูข้อความจาก $role ($port)  ·  กด Ctrl+C เพื่อกลับเมนู" -ForegroundColor Cyan
-  Write-Host '  gateway ปกติ: "-> Firebase 200"   node ปกติ: "gateway ได้รับ"' -ForegroundColor DarkGray
-  try { & $cli monitor -p $port --config baudrate=115200 --quiet } catch {}
+  Write-Host "  กำลังดูข้อความจาก $role ($port)  ·  กด q เพื่อกลับเมนู" -ForegroundColor Cyan
+  Write-Host '  gateway ปกติ: "-> Firebase 200"   node ปกติ: "gateway ได้รับ"   (node ส่งเป็นรอบทุก 10 นาที อาจต้องรอ)' -ForegroundColor DarkGray
+  $sp = New-Object System.IO.Ports.SerialPort $port, 115200
+  $sp.DtrEnable = $false; $sp.RtsEnable = $false
+  try { $sp.Open() } catch { Write-Host "  เปิด $port ไม่ได้ (โปรแกรมอื่นใช้อยู่? ปิด Serial Monitor ใน Arduino IDE ก่อน)" -ForegroundColor Red; return }
+  Start-Sleep -Milliseconds 300
+  $sp.DiscardInBuffer()   # ทิ้งข้อมูลค้างในไดรเวอร์ (ไม่งั้นบางทีขึ้นข้อความซ้ำๆ รัวๆ)
+  $buf = New-Object System.Collections.Generic.List[byte]
+  $chunk = New-Object byte[] 4096
+  $last = ''
+  try {
+    while ($true) {
+      if ([Console]::KeyAvailable -and [Console]::ReadKey($true).KeyChar -eq 'q') { break }
+      if ($sp.BytesToRead -gt 0) {
+        $n = $sp.Read($chunk, 0, $chunk.Length)
+        for ($i = 0; $i -lt $n; $i++) {
+          if ($chunk[$i] -eq 10) {
+            $line = [Text.Encoding]::UTF8.GetString($buf.ToArray()).Trim()
+            $buf.Clear()
+            if ($line -ne $last -and (Test-CleanLine $line)) {
+              $color = if ($line -match 'Firebase 200|gateway ได้รับ|สำเร็จ|ต่อได้') { 'Green' } elseif ($line -match 'ไม่|error|Error|E \(') { 'Yellow' } else { 'Gray' }
+              Write-Host ("  " + (Get-Date -Format 'HH:mm:ss') + "  " + $line) -ForegroundColor $color
+              $last = $line
+            }
+          } elseif ($buf.Count -lt 2000) { $buf.Add($chunk[$i]) } else { $buf.Clear() }
+        }
+      } else { Start-Sleep -Milliseconds 100 }
+    }
+  } finally { $sp.Close() }
 }
 
 function Upload-Board($role) {
