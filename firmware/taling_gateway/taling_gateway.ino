@@ -100,8 +100,7 @@ void upload(const Incoming &in) {
 // บอกสาเหตุที่ต่อ WiFi ไม่ได้เป็นภาษาไทย
 void printWiFiStatus() {
   switch (WiFi.status()) {
-    case WL_CONNECTED:      Serial.printf(" ต่อได้ (IP %s)
-", WiFi.localIP().toString().c_str()); break;
+    case WL_CONNECTED:      Serial.printf(" ต่อได้ (IP %s)\n", WiFi.localIP().toString().c_str()); break;
     case WL_NO_SSID_AVAIL:  Serial.println(" ไม่เจอ WiFi ชื่อนี้ — ESP32 ใช้ได้เฉพาะ 2.4 GHz (ชื่อที่ลงท้าย 5G ใช้ไม่ได้)"); break;
     case WL_CONNECT_FAILED: Serial.println(" ต่อไม่ได้ — รหัส WiFi อาจผิด"); break;
     default:                Serial.println(" ต่อไม่ได้ — เช็กชื่อ/รหัส WiFi และต้องเป็น 2.4 GHz"); break;
