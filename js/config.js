@@ -9,6 +9,8 @@ const THRESHOLDS = [
   { name: 'เฝ้าระวัง', cm: 30, color: '#f9a825' }
 ];
 const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
+// สถานีที่ไม่มีข้อมูลใหม่เกินหนึ่งรอบส่ง (บอร์ดดับ / เน็ตหลุด / แบตหมด) แสดงเป็นสีเทา
+const SILENT = { name: 'ไม่มีข้อมูลใหม่', color: '#8e979c' };
 
 // ข้อมูลสดจาก ESP32 ผ่าน Firebase Realtime Database
 // ใส่ URL ของ database (ไม่ต้องมี / ท้าย) เช่น 'https://taling-xxxx-default-rtdb.asia-southeast1.firebasedatabase.app'

@@ -17,6 +17,18 @@
 #include "packet.h"
 #include "secrets.h"
 
+// แจ้งเตือน Telegram (ใส่ TG_BOT_TOKEN / TG_CHAT_ID ใน secrets.h ถ้าว่าง = ปิดแจ้งเตือน)
+#ifndef TG_BOT_TOKEN
+#define TG_BOT_TOKEN ""
+#endif
+#ifndef TG_CHAT_ID
+#define TG_CHAT_ID ""
+#endif
+const float WARN_CM = 50.0;              // ต้องตรงกับเกณฑ์ "เตือน" บนเว็บ (js/config.js)
+const float CRIT_CM = 65.0;              // ต้องตรงกับเกณฑ์ "วิกฤต"
+const unsigned long REPEAT_MS = 6UL * 3600 * 1000;   // ยังอยู่ระดับเดิม เตือนซ้ำทุก 6 ชั่วโมง
+const char* SITE_URL = "https://potitusafe-tech.github.io/taling-map/";
+
 const uint32_t NET_KEY = 20261023;   // ต้องตรงกับ NET_KEY ของ node
 const char* DB_URL  = "https://taling-map-default-rtdb.asia-southeast1.firebasedatabase.app";
 const char* API_KEY = "AIzaSyBCwFPOV4NEjiKPrg5fHNWlX3_jmYGS_wQ";   // Web API Key ไม่ใช่ความลับ
@@ -68,6 +80,57 @@ bool signIn() {
 
 float r1(float v) { return round(v * 10) / 10.0; }
 
+// ---------- แจ้งเตือน Telegram ----------
+// เตือนเมื่อระดับ "ขึ้น" เป็นเตือน/วิกฤต, เตือนซ้ำทุก REPEAT_MS ถ้ายังค้าง, และบอกเมื่อกลับมาปกติ
+struct AlertState { char id[12]; uint8_t level; unsigned long sentAt; };
+AlertState alerts[64];
+int alertCount = 0;
+
+uint8_t alertLevel(float cm) { return cm >= CRIT_CM ? 2 : cm >= WARN_CM ? 1 : 0; }
+
+bool sendTelegram(const String &text) {
+  WiFiClientSecure c; c.setInsecure();
+  HTTPClient http;
+  http.begin(c, String("https://api.telegram.org/bot") + TG_BOT_TOKEN + "/sendMessage");
+  http.addHeader("Content-Type", "application/json");
+  JsonDocument d;
+  d["chat_id"] = TG_CHAT_ID;
+  d["text"] = text;
+  d["disable_web_page_preview"] = true;
+  String body; serializeJson(d, body);
+  int code = http.POST(body);
+  http.end();
+  Serial.printf("  Telegram -> %d\n", code);
+  return code == 200;
+}
+
+void checkAlert(const TalingPacket &p) {
+  if (!strlen(TG_BOT_TOKEN) || !strlen(TG_CHAT_ID) || isnan(p.levelCm)) return;
+  AlertState *a = nullptr;
+  for (int i = 0; i < alertCount; i++) if (!strcmp(alerts[i].id, p.stationId)) { a = &alerts[i]; break; }
+  if (!a) {
+    if (alertCount >= 64) return;
+    a = &alerts[alertCount++];
+    strncpy(a->id, p.stationId, sizeof a->id - 1); a->id[sizeof a->id - 1] = 0;
+    a->level = 0; a->sentAt = 0;
+  }
+  uint8_t lv = alertLevel(p.levelCm);
+  String msg;
+  if (lv > a->level || (lv > 0 && lv == a->level && millis() - a->sentAt > REPEAT_MS)) {
+    msg = String(lv == 2 ? "🔴 วิกฤต" : "🟠 เตือน") + " สถานี " + p.stationId +
+          "\nระดับน้ำ " + String(p.levelCm, 1) + " cm (เกณฑ์ " + String(lv == 2 ? CRIT_CM : WARN_CM, 0) + " cm)";
+  } else if (lv == 0 && a->level > 0) {
+    msg = String("🟢 กลับสู่ระดับปกติ สถานี ") + p.stationId + "\nระดับน้ำ " + String(p.levelCm, 1) + " cm";
+  }
+  if (msg.length()) {
+    struct tm t; char ts[20] = "";
+    if (getLocalTime(&t, 500)) strftime(ts, sizeof ts, "%d/%m %H:%M", &t);
+    msg += String("\nเวลา ") + ts + "\nดูแผนที่: " + SITE_URL;
+    if (sendTelegram(msg)) a->sentAt = millis();
+  }
+  a->level = lv;
+}
+
 void upload(const Incoming &in) {
   if (idToken == "" || millis() - tokenAt > 50UL * 60 * 1000) { if (!signIn()) return; }
   const TalingPacket &p = in.p;
@@ -95,6 +158,7 @@ void upload(const Incoming &in) {
   http.end();
   Serial.printf("%s #%lu (สัญญาณ %d dBm) -> Firebase %d  %s\n", p.stationId, (unsigned long)p.seq, in.rssi, code, json.c_str());
   if (code == 401) idToken = "";
+  checkAlert(p);
 }
 
 // บอกสาเหตุที่ต่อ WiFi ไม่ได้เป็นภาษาไทย

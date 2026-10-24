@@ -8,3 +8,8 @@
 // บัญชีอุปกรณ์ใน Firebase Authentication
 #define DEV_EMAIL "device@taling.local"
 #define DEV_PASS  "รหัสผ่านบัญชีอุปกรณ์"
+
+// แจ้งเตือน Telegram (ไม่ใช้ก็ลบ 2 บรรทัดนี้ หรือปล่อยว่าง "")
+// TG_BOT_TOKEN: จาก @BotFather   TG_CHAT_ID: เลขแชทที่จะรับแจ้งเตือน (ดูวิธีใน README)
+#define TG_BOT_TOKEN ""
+#define TG_CHAT_ID   ""

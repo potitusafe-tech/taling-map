@@ -23,6 +23,12 @@ function nextUpdate(s) {
   else text = 'เลยกำหนด ' + (-diffMin) + ' นาที — บอร์ดอาจไม่ได้ส่ง';
   return { at: at, diffMin: diffMin, text: text };
 }
+// เงียบ = ไม่มีข้อมูลใหม่เกินหนึ่งรอบหลังเวลาที่คาดไว้ (ข้อมูลจำลองไม่นับ)
+function isSilent(s) {
+  const nx = nextUpdate(s);
+  return !!nx && nx.diffMin <= -(s.every_min || LIVE.expectedEveryMin);
+}
+
 // รอบถัดไปของทั้งระบบ = จากสถานีที่อัปเดตล่าสุด
 function nextRound() {
   let best = null;

@@ -119,3 +119,4 @@ body.closed #open { display: block; }
 @keyframes wave2 { from { transform: translateX(-140px); } to { transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .wl { transition: none; } .bob, .wv1, .wv2 { animation: none; } }
 #wmsg { margin-top: 6px; font-size: 12px; color: var(--link); }
+.silent-warn { margin: 6px 0 2px; padding: 5px 8px; border-radius: 6px; font-size: 12px; background: var(--btn); border: 1px solid #8e979c; color: var(--fg); }

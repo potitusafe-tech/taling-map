@@ -58,13 +58,15 @@ function render() {
     }
     const st = statusOf(Number(s.level_cm));
     const lvl = Number(s.level_cm).toFixed(1);
+    const silent = isSilent(s);
+    const mk = silent ? SILENT : st;   // สีบนแผนที่และในรายการ: เงียบ = เทา
 
     const el = document.createElement('div');
     el.className = 'mk';
-    el.style.setProperty('--c', st.color);
-    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = st.color;
+    el.style.setProperty('--c', mk.color);
+    const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = mk.color;
     const chip = document.createElement('span'); chip.className = 'chip';
-    chip.textContent = stationLabel(s) + ' · ' + st.name;
+    chip.textContent = stationLabel(s) + ' · ' + mk.name;
     el.appendChild(dot); el.appendChild(chip);
     const icon = L.divIcon({ html: el, className: '', iconSize: [0, 0] });
     const m = L.marker([s.lat, s.lon], { icon: icon, title: stationLabel(s) }).addTo(stationLayer);
@@ -73,6 +75,7 @@ function render() {
     const pop = document.createElement('div');
     const hd = document.createElement('b'); hd.textContent = stationLabel(s) + ' · ' + st.name; hd.style.color = colorText(st); pop.appendChild(hd);
     if (code) { const dn = document.createElement('div'); dn.className = 'note'; dn.style.marginTop = '0'; dn.textContent = districtTitle(distName[code]); pop.appendChild(dn); }
+    if (silent) { const sw = document.createElement('div'); sw.className = 'silent-warn'; sw.textContent = '⚠ ไม่มีข้อมูลใหม่เกินกำหนด ค่าด้านล่างเป็นค่าล่าสุดที่ได้รับ — เช็กไฟ/เน็ตของบอร์ด'; pop.appendChild(sw); }
     const rows = [];
     const num = (v, d) => (v === undefined || v === null || v === '') ? '-' : Number(v).toFixed(d);
     rows.push(['ระดับน้ำ (เหนือระดับต่ำสุด)', lvl + ' cm']);
@@ -104,9 +107,9 @@ function render() {
 
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'st';
-    const d = document.createElement('span'); d.className = 'd'; d.style.background = st.color;
+    const d = document.createElement('span'); d.className = 'd'; d.style.background = mk.color;
     const n = document.createElement('span'); n.className = 'n'; n.textContent = stationLabel(s);
-    const v = document.createElement('span'); v.className = 'v'; v.textContent = st.name;
+    const v = document.createElement('span'); v.className = 'v'; v.textContent = silent ? 'เงียบ' : st.name;
     btn.appendChild(d); btn.appendChild(n); btn.appendChild(v);
     btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); m.openPopup(); });
     list.appendChild(btn);
@@ -119,6 +122,7 @@ function renderLegend() {
   lg.textContent = '';
   const rows = THRESHOLDS.slice().reverse().map(t => ({ c: t.color, text: t.name + ' ตั้งแต่ ' + t.cm + ' cm (เกณฑ์ตัวอย่าง)' }));
   rows.unshift({ c: NORMAL.color, text: NORMAL.name });
+  rows.push({ c: SILENT.color, text: SILENT.name + ' (เกินหนึ่งรอบส่ง)' });
   rows.forEach(r => {
     const row = document.createElement('div');
     const i = document.createElement('i'); i.style.background = r.c;
