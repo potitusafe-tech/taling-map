@@ -28,8 +28,6 @@ function stationLabel(s) { return s.name + ' (' + s.id + ')'; }
 
 function colorText(st) { return st.color === '#f9a825' && !isDark() ? '#8a6100' : st.color; }
 
-// กดอำเภอ: ซูมไปที่อำเภอ แล้วสรุปสถานีในอำเภอนั้น
-
 // กำลังวาดใหม่ (กันไม่ให้ popupclose ลบตำแหน่งน้ำตอนวาดใหม่)
 let rendering = false;
 
@@ -105,16 +103,45 @@ function render() {
     });
     m.on('popupclose', () => { if (!rendering) delete waterY[s.id]; });
 
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'st'; btn.title = stationLabel(s);
-    const d = document.createElement('span'); d.className = 'd'; d.style.background = mk.color;
-    const n = document.createElement('span'); n.className = 'n'; n.textContent = stationLabel(s);
-    const v = document.createElement('span'); v.className = 'v'; v.textContent = silent ? 'เงียบ' : st.name;
-    btn.appendChild(d); btn.appendChild(n); btn.appendChild(v);
-    btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], 12); m.openPopup(); });
-    list.appendChild(btn);
+    list.appendChild(stationRow(s));
   });
+  renderOverviewSummary();
+  if (focusCode) renderDistrictView();
   if (openId && markerById[openId] && map.hasLayer(markerById[openId])) markerById[openId].openPopup();
+}
+
+// แถวสถานีในแถบล่าง (ใช้ทั้งหน้าภาพรวมและหน้าอำเภอ) กดแล้วบินไปที่สถานีและเปิดกล่องรายละเอียด
+function stationRow(s) {
+  const st = statusOf(Number(s.level_cm));
+  const silent = isSilent(s);
+  const mk = silent ? SILENT : st;
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'st'; btn.title = stationLabel(s);
+  const d = document.createElement('span'); d.className = 'd'; d.style.background = mk.color;
+  const n = document.createElement('span'); n.className = 'n'; n.textContent = stationLabel(s);
+  const v = document.createElement('span'); v.className = 'v';
+  v.textContent = silent ? 'เงียบ' : Number(s.level_cm).toFixed(1) + ' cm · ' + st.name;
+  btn.appendChild(d); btn.appendChild(n); btn.appendChild(v);
+  btn.addEventListener('click', () => { map.flyTo([s.lat, s.lon], Math.max(12, map.getZoom())); markerById[s.id].openPopup(); });
+  return btn;
+}
+
+// หน้าภาพรวม: นับจำนวนสถานีแต่ละสถานะ
+function renderOverviewSummary() {
+  const box = document.getElementById('ov-sum');
+  box.textContent = '';
+  const groups = THRESHOLDS.concat([NORMAL, SILENT]).map(t => ({ t: t, n: 0 }));   // วิกฤต → ปกติ → เงียบ
+  STATIONS.forEach(s => {
+    const t = isSilent(s) ? SILENT : statusOf(Number(s.level_cm));
+    groups.find(g => g.t === t).n++;
+  });
+  groups.filter(g => g.n || g.t !== SILENT).forEach(g => {
+    const c = document.createElement('div'); c.className = 'count';
+    c.style.setProperty('--c', g.t.color);
+    const num = document.createElement('b'); num.textContent = String(g.n);
+    const lb = document.createElement('span'); lb.textContent = g.t.name;
+    c.appendChild(num); c.appendChild(lb); box.appendChild(c);
+  });
 }
 
 function renderLegend() {

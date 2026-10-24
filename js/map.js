@@ -19,9 +19,9 @@ const prov = L.geoJSON(LAYERS.prov, {
   style: { color: '#d32f2f', weight: 3, fill: false },
   interactive: false
 }).addTo(map);
-// เว้นที่ด้านล่างให้แถบเมนู (ความสูงปัจจุบันอยู่ใน --sheet-h)
+// เว้นที่ด้านล่างให้แถบเมนู (ความสูงปัจจุบันอยู่ใน --sheet-h ปิดแถบ = 0)
 function fitOpts(pad) {
-  const sheetH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sheet-h')) || 76;
+  const sheetH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sheet-h')) || 0;
   return { paddingTopLeft: [pad, pad], paddingBottomRight: [pad, pad + sheetH] };
 }
 // ถ้าหน้าเปิดตอนแผนที่ยังไม่มีขนาด (เช่นแท็บซ่อนอยู่) ตั้งมุมมองคร่าวๆ ก่อน แล้วค่อยพอดีจังหวัดเมื่อมีขนาด
@@ -31,8 +31,11 @@ function fitProvince() {
   else map.setView(prov.getBounds().getCenter(), 9);
 }
 fitProvince();
-// ซูมออกได้ไม่เกินกรอบจังหวัดข้างเคียง
-function syncMinZoom() { if (map.getSize().x > 0) map.setMinZoom(map.getBoundsZoom(REGION, true)); }
+// อำเภอที่กำลังโฟกัส (js/district.js) และเลเยอร์มืดรอบอำเภอ
+let focusCode = null;
+const focusGroup = L.layerGroup().addTo(map);
+// ซูมออกได้ไม่เกินกรอบจังหวัดข้างเคียง (ตอนโฟกัสอำเภอ district.js ตั้งเอง)
+function syncMinZoom() { if (!focusCode && map.getSize().x > 0) map.setMinZoom(map.getBoundsZoom(REGION, true)); }
 syncMinZoom();
 map.on('resize', () => { syncMinZoom(); if (!fitted) fitProvince(); });
 
@@ -92,7 +95,7 @@ function syncChips() { map.getContainer().classList.toggle('lowz', map.getZoom()
 map.on('zoomend', syncChips);
 syncChips();
 
-// รายการอำเภอในแผงด้านซ้าย
+// รายการอำเภอในเมนู "เลือกอำเภอ"
 (function () {
   const grid = document.getElementById('dgrid');
   LAYERS.dist.features.slice().sort((a, c) => a.properties.code < c.properties.code ? -1 : 1).forEach(f => {
