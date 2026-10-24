@@ -97,6 +97,17 @@ void upload(const Incoming &in) {
   if (code == 401) idToken = "";
 }
 
+// บอกสาเหตุที่ต่อ WiFi ไม่ได้เป็นภาษาไทย
+void printWiFiStatus() {
+  switch (WiFi.status()) {
+    case WL_CONNECTED:      Serial.printf(" ต่อได้ (IP %s)
+", WiFi.localIP().toString().c_str()); break;
+    case WL_NO_SSID_AVAIL:  Serial.println(" ไม่เจอ WiFi ชื่อนี้ — ESP32 ใช้ได้เฉพาะ 2.4 GHz (ชื่อที่ลงท้าย 5G ใช้ไม่ได้)"); break;
+    case WL_CONNECT_FAILED: Serial.println(" ต่อไม่ได้ — รหัส WiFi อาจผิด"); break;
+    default:                Serial.println(" ต่อไม่ได้ — เช็กชื่อ/รหัส WiFi และต้องเป็น 2.4 GHz"); break;
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   delay(300);
@@ -106,7 +117,7 @@ void setup() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.printf("\ngateway: กำลังต่อ WiFi %s", WIFI_SSID);
   for (int i = 0; i < 60 && WiFi.status() != WL_CONNECTED; i++) { delay(500); Serial.print("."); }
-  Serial.println(WiFi.status() == WL_CONNECTED ? " ต่อได้" : " ต่อไม่ได้ (เช็กชื่อ/รหัส WiFi)");
+  printWiFiStatus();
 
   uint8_t mac[6];
   esp_wifi_get_mac(WIFI_IF_STA, mac);
@@ -122,7 +133,13 @@ void setup() {
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) { WiFi.reconnect(); delay(2000); return; }
+  static unsigned long lastTry = 0;
+  if (WiFi.status() != WL_CONNECTED) {
+    // ลองต่อใหม่ทุก 30 วินาที (ถี่กว่านี้ ESP32 จะฟ้อง "sta is connecting")
+    if (millis() - lastTry > 30000) { lastTry = millis(); Serial.print("WiFi หลุด กำลังต่อใหม่..."); WiFi.reconnect(); }
+    delay(500);
+    return;
+  }
   Incoming in;
   if (xQueueReceive(queue, &in, pdMS_TO_TICKS(500)) == pdTRUE) upload(in);
 }

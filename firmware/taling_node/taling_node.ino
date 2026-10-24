@@ -17,12 +17,18 @@
 #include "packet.h"
 
 // ---------- ค่าที่แก้ ----------
-#define TEST_MODE 1                         // 1 = ค่าจำลอง (ไม่ต้องต่อเซนเซอร์), 0 = อ่านเซนเซอร์จริง
+#define TEST_MODE 1                         // 1 = สุ่มค่า (ไม่ต้องต่อเซนเซอร์), 0 = อ่านเซนเซอร์จริง
+#define TEST_ALL_STATIONS 1                 // โหมดสุ่ม: 1 = วนส่งแทนทุกสถานีบนเว็บ, 0 = ส่งเฉพาะ STATION_ID
 const char* STATION_ID = "2401-1";          // ต้องตรงกับรหัสในวงเล็บบนเว็บ
 uint8_t GATEWAY_MAC[6] = {0x20, 0x9B, 0xA9, 0x7C, 0xDA, 0x44};   // MAC ของ gateway (บอร์ด ESP32 ตัวแรกที่ต่อ COM4) เปลี่ยนถ้าใช้บอร์ดอื่น
 const uint32_t NET_KEY = 20261023;          // ตัวเลขลับร่วมกับ gateway
 const float SENSOR_HEIGHT_CM = 140.0;       // 90 cm + ความสูงตลิ่ง h
-const int   SEND_EVERY_SEC = 30;
+const int   SEND_EVERY_SEC = TEST_MODE && TEST_ALL_STATIONS ? 5 : 30;   // โหมดสุ่มทุกสถานี: ส่งทีละสถานีทุก 5 วินาที
+
+// รหัสสถานีบนเว็บ (ใช้ตอน TEST_ALL_STATIONS)
+const char* TEST_IDS[] = {"2401-1","2401-2","2402-1","2402-2","2403-1","2403-2","2404-1","2404-2","2405-1","2405-2","2406-1",
+                          "2406-2","2407-1","2407-2","2408-1","2408-2","2409-1","2409-2","2410-1","2410-2","2411-1","2411-2"};
+const int TEST_COUNT = sizeof(TEST_IDS) / sizeof(TEST_IDS[0]);
 
 // ---------- ขา ----------
 const int PIN_TRIG = 5, PIN_ECHO = 18;      // JSN-SR04T (Echo 5V ต้องแบ่งแรงดันเหลือ 3.3V)
@@ -57,19 +63,23 @@ float readDistanceCm() {
   return v[n / 2];
 }
 
+float rnd(float lo, float hi) { return lo + (hi - lo) * (random(10001) / 10000.0); }
+
 void fillPacket(TalingPacket &p) {
   memset(&p, 0, sizeof p);
   p.magic = TALING_MAGIC;
   p.netKey = NET_KEY;
-  strncpy(p.stationId, STATION_ID, sizeof p.stationId - 1);
   p.seq = ++seq;
 #if TEST_MODE
-  // น้ำขึ้นลงช้าๆ 10–90 cm ให้เห็นสีและสกรูเปลี่ยนบนเว็บ
-  float level = 50 + 40 * sin(seq / 6.0);
+  strncpy(p.stationId, TEST_ALL_STATIONS ? TEST_IDS[(seq - 1) % TEST_COUNT] : STATION_ID, sizeof p.stationId - 1);
+  // สุ่มแบบสมจริง: ส่วนใหญ่ปกติ บางที่เฝ้าระวัง/เตือน นานๆ ครั้งวิกฤต
+  long roll = random(100);
+  float level = roll < 55 ? rnd(5, 30) : roll < 80 ? rnd(30, 50) : roll < 93 ? rnd(50, 65) : rnd(65, 98);
   p.levelCm = level;  p.distCm = SENSOR_HEIGHT_CM - level;
-  p.tempC = 29.5;  p.rh = 75;  p.presHpa = 1008.5;  p.battV = 3.9;
+  p.tempC = rnd(26, 34);  p.rh = rnd(60, 95);  p.presHpa = rnd(1005, 1012);  p.battV = rnd(3.6, 4.15);
   p.screws = (level >= 65 ? 1 : 0) | (level >= 80 ? 2 : 0) | (level >= 95 ? 4 : 0);
 #else
+  strncpy(p.stationId, STATION_ID, sizeof p.stationId - 1);
   float dist = readDistanceCm();
   p.distCm = dist;
   p.levelCm = dist > 0 ? SENSOR_HEIGHT_CM - dist : NAN;
@@ -104,6 +114,7 @@ void setup() {
   pinMode(PIN_TRIG, OUTPUT); pinMode(PIN_ECHO, INPUT);
   pinMode(PIN_L1, INPUT_PULLUP); pinMode(PIN_L2, INPUT_PULLUP); pinMode(PIN_L3, INPUT_PULLUP);
   analogSetPinAttenuation(PIN_BATT, ADC_11db);
+  randomSeed(esp_random());
 #if !TEST_MODE
   Wire.begin(21, 22);
   bmeOk = bme.begin(0x76) || bme.begin(0x77);
@@ -135,8 +146,8 @@ void loop() {
     }
     Serial.println();
   }
-  Serial.printf("#%lu ระดับ %.1f cm  สกรู L1%c L2%c L3%c  -> %s (ช่อง %u)\n",
-    (unsigned long)p.seq, p.levelCm, p.screws & 1 ? '*' : '-', p.screws & 2 ? '*' : '-', p.screws & 4 ? '*' : '-',
+  Serial.printf("%s #%lu ระดับ %.1f cm  สกรู L1%c L2%c L3%c  -> %s (ช่อง %u)\n",
+    p.stationId, (unsigned long)p.seq, p.levelCm, p.screws & 1 ? '*' : '-', p.screws & 2 ? '*' : '-', p.screws & 4 ? '*' : '-',
     ok ? "gateway ได้รับ" : "ไม่พบ gateway (เช็ก GATEWAY_MAC / gateway เปิดอยู่ไหม)", channel);
   delay(SEND_EVERY_SEC * 1000UL);
 }
