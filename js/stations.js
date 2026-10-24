@@ -195,6 +195,8 @@ function render() {
     SCREWS.forEach((sc, i) => rows.push(['สกรูวัดระดับ ' + sc.id + ' (' + (15 * (i + 1)) + ' cm)' + (typeof s[sc.id.toLowerCase()] === 'boolean' ? '' : ' · คำนวณ'), screwWet(s, sc) ? 'เปียก' : 'แห้ง']));
     rows.push(['แบตเตอรี่', num(s.batt_v, 2) + ' V']);
     rows.push(['อัปเดตล่าสุด', s.time]);
+    const nx = nextUpdate(s);
+    if (nx) rows.push(['อัปเดตครั้งต่อไป (คาดการณ์)', nx.text]);
     const tb = document.createElement('table'); tb.className = 'info';
     rows.forEach(r => { const tr = document.createElement('tr'); const a1 = document.createElement('td'); a1.textContent = r[0]; const a2 = document.createElement('td'); a2.textContent = r[1]; tr.appendChild(a1); tr.appendChild(a2); tb.appendChild(tr); });
     const wrap = document.createElement('div'); wrap.className = 'stwrap';
@@ -233,6 +235,35 @@ function renderLegend() {
     const t = document.createElement('span'); t.textContent = r.text;
     row.appendChild(i); row.appendChild(t); lg.appendChild(row);
   });
+}
+
+// ---------- คาดการณ์เวลาอัปเดตครั้งต่อไป ----------
+// เวลาในข้อมูลเป็น "dd/MM/yyyy HH:mm" (gateway ใส่ให้) + รอบส่ง (every_min ของสถานี หรือ LIVE.expectedEveryMin)
+function parseStationTime(t) {
+  const m = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/.exec(String(t || ''));
+  if (!m) return null;
+  const y = Number(m[3]) > 2400 ? Number(m[3]) - 543 : Number(m[3]);   // รองรับปี พ.ศ.
+  return new Date(y, Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]));
+}
+function hhmm(d) { return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }); }
+function nextUpdate(s) {
+  if (s.sample) return null;
+  const last = parseStationTime(s.time);
+  const every = s.every_min || LIVE.expectedEveryMin;
+  if (!last || !every) return null;
+  const at = new Date(last.getTime() + every * 60000);
+  const diffMin = Math.round((at - Date.now()) / 60000);
+  let text;
+  if (diffMin > 0) text = hhmm(at) + ' น. (อีกราว ' + diffMin + ' นาที)';
+  else if (diffMin > -every) text = hhmm(at) + ' น. (ใกล้ถึงแล้ว)';
+  else text = 'เลยกำหนด ' + (-diffMin) + ' นาที — บอร์ดอาจไม่ได้ส่ง';
+  return { at: at, diffMin: diffMin, text: text };
+}
+// รอบถัดไปของทั้งระบบ = จากสถานีที่อัปเดตล่าสุด
+function nextRound() {
+  let best = null;
+  STATIONS.forEach(s => { const nx = nextUpdate(s); if (nx && nx.diffMin > -LIVE.expectedEveryMin && (!best || nx.at > best.at)) best = nx; });
+  return best ? '~' + hhmm(best.at) + ' น.' : '';
 }
 
 // ---------- ข้อมูลสด ----------
@@ -277,7 +308,8 @@ async function loadLive() {
       const clean = mergeLive(baseStations, data && typeof data === 'object' ? data : {});
       const n = Object.keys(data || {}).filter(id => clean.some(s => s.id === id)).length;
       STATIONS = clean; render();
-      setLiveMsg('ข้อมูลสดจาก ESP32: ' + n + ' สถานี · อ่านล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), true);
+      const nr = nextRound();
+      setLiveMsg('ข้อมูลสดจาก ESP32: ' + n + ' สถานี · อ่านล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + (nr ? ' · รอบถัดไป ' + nr : ''), true);
     } catch (e) {
       setLiveMsg('เชื่อมต่อ Firebase ไม่ได้ (' + safeText(e.message, 40) + ') แสดงค่าล่าสุดที่มี', false);
     }

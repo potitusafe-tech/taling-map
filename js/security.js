@@ -38,6 +38,7 @@ function sanitizeStation(raw) {
     rh: safeNum(raw.rh, 0, 100),
     pres_hpa: safeNum(raw.pres_hpa, 800, 1100),
     batt_v: safeNum(raw.batt_v, 0, 20),
+    every_min: safeNum(raw.every_min, 0.1, 1440),
     sample: raw.sample === true
   };
   // สกรู L1-L3 ที่ ESP32 อ่านได้จริง (true = เปียก) ไม่ส่งมา = ใช้ระดับน้ำคำนวณแทน

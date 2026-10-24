@@ -15,7 +15,10 @@ const NORMAL = { name: 'ปกติ', color: '#2e7d32' };
 // ว่างไว้ = ใช้ข้อมูลใน data/stations.js อย่างเดียว · ห้ามใส่ API Key หรือรหัสผ่านในไฟล์นี้
 const LIVE = {
   firebaseUrl: 'https://taling-map-default-rtdb.asia-southeast1.firebasedatabase.app',
-  refreshSec: 30
+  refreshSec: 30,
+  // บอร์ดส่งข้อมูลแต่ละสถานีทุกกี่นาที ใช้คาดการณ์ "อัปเดตครั้งต่อไป" (ต้องตรงกับ TEST_ROUND_MIN / รอบส่งของ node)
+  // ถ้าบอร์ดส่ง every_min มากับข้อมูล จะใช้ค่านั้นแทน
+  expectedEveryMin: 10
 };
 
 // ขอบเขตที่เลื่อนแผนที่ได้: ฉะเชิงเทราและจังหวัดที่ติดกัน (กรอบสี่เหลี่ยมคร่าวๆ)
