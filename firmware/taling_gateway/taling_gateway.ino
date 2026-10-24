@@ -27,6 +27,7 @@
 const float WARN_CM = 50.0;              // ต้องตรงกับเกณฑ์ "เตือน" บนเว็บ (js/config.js)
 const float CRIT_CM = 65.0;              // ต้องตรงกับเกณฑ์ "วิกฤต"
 const unsigned long REPEAT_MS = 6UL * 3600 * 1000;   // ยังอยู่ระดับเดิม เตือนซ้ำทุก 6 ชั่วโมง
+const unsigned long TG_GAP_MS = 30UL * 1000;         // เว้นระหว่างข้อความ Telegram แต่ละข้อความ 30 วินาที
 const char* SITE_URL = "https://potitusafe-tech.github.io/taling-map/";
 
 const uint32_t NET_KEY = 20261023;   // ต้องตรงกับ NET_KEY ของ node
@@ -88,7 +89,7 @@ int alertCount = 0;
 
 uint8_t alertLevel(float cm) { return cm >= CRIT_CM ? 2 : cm >= WARN_CM ? 1 : 0; }
 
-bool sendTelegram(const String &text) {
+int sendTelegram(const String &text) {
   WiFiClientSecure c; c.setInsecure();
   HTTPClient http;
   http.begin(c, String("https://api.telegram.org/bot") + TG_BOT_TOKEN + "/sendMessage");
@@ -101,7 +102,25 @@ bool sendTelegram(const String &text) {
   int code = http.POST(body);
   http.end();
   Serial.printf("  Telegram -> %d\n", code);
-  return code == 200;
+  return code;
+}
+
+// ข้อความรอส่ง: ส่งทีละข้อความ เว้นห่างกัน TG_GAP_MS ไม่ให้เด้งติดกันในกลุ่ม
+String outbox[16];
+int outHead = 0, outCount = 0;
+unsigned long lastTgAt = 0;
+
+void queueTelegram(const String &text) {
+  if (outCount >= 16) { Serial.println("  Telegram: คิวเต็ม ข้ามข้อความนี้"); return; }
+  outbox[(outHead + outCount++) % 16] = text;
+  Serial.printf("  Telegram: เข้าคิว (รอส่ง %d)\n", outCount);
+}
+
+void flushTelegram() {
+  if (!outCount || (lastTgAt && millis() - lastTgAt < TG_GAP_MS)) return;
+  lastTgAt = millis();
+  // ติดต่อไม่ได้ (ค่าติดลบ) = เก็บไว้ลองใหม่รอบหน้า, ได้คำตอบแล้ว (200 หรือ error) = เอาออกจากคิว
+  if (sendTelegram(outbox[outHead]) >= 0) { outbox[outHead] = ""; outHead = (outHead + 1) % 16; outCount--; }
 }
 
 void checkAlert(const TalingPacket &p) {
@@ -126,7 +145,8 @@ void checkAlert(const TalingPacket &p) {
     struct tm t; char ts[20] = "";
     if (getLocalTime(&t, 500)) strftime(ts, sizeof ts, "%d/%m %H:%M", &t);
     msg += String("\nเวลา ") + ts + "\nดูแผนที่: " + SITE_URL;
-    if (sendTelegram(msg)) a->sentAt = millis();
+    queueTelegram(msg);
+    a->sentAt = millis();
   }
   a->level = lv;
 }
@@ -205,4 +225,5 @@ void loop() {
   }
   Incoming in;
   if (xQueueReceive(queue, &in, pdMS_TO_TICKS(500)) == pdTRUE) upload(in);
+  flushTelegram();
 }
