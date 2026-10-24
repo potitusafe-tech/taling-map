@@ -181,6 +181,9 @@ table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums
 .support-email button { font: inherit; font-size: 12px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
 .support-send { display: block; margin-top: 10px; text-align: center; text-decoration: none; font-weight: 700; background: var(--seg); color: var(--seg-fg); border-radius: 8px; padding: 8px; }
 .support .note { margin: 8px 0 0; }
+.support-tel { display: block; margin-top: 8px; text-align: center; text-decoration: none; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--fg); background: var(--btn); border: 1px solid var(--line); border-radius: 8px; padding: 7px; }
+.support-tel:hover { background: var(--btn-h); }
+.support-tel:focus-visible { outline: 3px solid var(--simc); outline-offset: 2px; }
 .stwrap { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: flex-start; }
 .stwrap table.info { flex: 1 1 220px; width: auto; }
 @media (min-width: 680px) { .stwrap { width: 590px; flex-wrap: nowrap; } .stwrap table.info { flex: 1 1 auto; } .fig { flex: 0 0 260px; } }
