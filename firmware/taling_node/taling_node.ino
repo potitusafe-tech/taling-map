@@ -18,12 +18,12 @@
 
 // ---------- ค่าที่แก้ ----------
 #define TEST_MODE 1                         // 1 = สุ่มค่า (ไม่ต้องต่อเซนเซอร์), 0 = อ่านเซนเซอร์จริง
-#define TEST_ALL_STATIONS 1                 // โหมดสุ่ม: 1 = วนส่งแทนทุกสถานีบนเว็บ, 0 = ส่งเฉพาะ STATION_ID
+#define TEST_ALL_STATIONS 0                 // โหมดสุ่ม: 1 = วนส่งแทนทุกสถานีบนเว็บ, 0 = ส่งเฉพาะ STATION_ID
 const char* STATION_ID = "2401-1";          // ต้องตรงกับรหัสในวงเล็บบนเว็บ
 uint8_t GATEWAY_MAC[6] = {0x20, 0x9B, 0xA9, 0x7C, 0xDA, 0x44};   // MAC ของ gateway (บอร์ด ESP32 ตัวแรกที่ต่อ COM4) เปลี่ยนถ้าใช้บอร์ดอื่น
 const uint32_t NET_KEY = 20261023;          // ตัวเลขลับร่วมกับ gateway
 const float SENSOR_HEIGHT_CM = 140.0;       // 90 cm + ความสูงตลิ่ง h
-const int   SEND_EVERY_SEC = TEST_MODE && TEST_ALL_STATIONS ? 5 : 30;   // โหมดสุ่มทุกสถานี: ส่งทีละสถานีทุก 5 วินาที
+const int   SEND_EVERY_SEC = TEST_MODE ? 5 : 30;   // โหมดสุ่ม: ส่งทุก 5 วินาที (ใช้งานจริง 30 วินาที)
 
 // รหัสสถานีบนเว็บ (ใช้ตอน TEST_ALL_STATIONS)
 const char* TEST_IDS[] = {"2401-1","2401-2","2402-1","2402-2","2403-1","2403-2","2404-1","2404-2","2405-1","2405-2","2406-1",
