@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ความปลอดภัย: สคริปต์ของเว็บนี้เท่านั้น และเรียกข้อมูลได้เฉพาะ Firebase -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>ตลิ่งคลอง - ESP → ESP</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/esp.css">
+<script src="js/theme.js"></script>
+</head>
+<body class="esp-page">
+<main class="esp-wrap">
+  <header class="esp-head">
+    <a href="index.html" class="esp-back">← กลับแผนที่</a>
+    <h1>การสื่อสาร ESP → ESP</h1>
+    <p>บอร์ดที่เสา (node) ส่งข้อมูลด้วย ESP-NOW ให้บอร์ดตัวกลาง (gateway) แล้ว gateway ส่งต่อขึ้น Firebase ให้หน้าเว็บ · หน้านี้อ่านข้อมูลใหม่ทุก 5 วินาที</p>
+  </header>
+
+  <!-- ภาพเส้นทาง: จุดวิ่งจาก node → gateway → Firebase ทุกครั้งที่มีแพ็กเก็ตใหม่ -->
+  <section class="esp-flow" aria-label="เส้นทางข้อมูล">
+    <svg id="flow" viewBox="0 0 760 170" role="img" aria-label="node ส่ง ESP-NOW ไป gateway แล้วส่ง HTTPS ไป Firebase">
+      <line class="flow-line" x1="150" y1="80" x2="330" y2="80"/>
+      <line class="flow-line" x1="470" y1="80" x2="610" y2="80"/>
+      <text class="flow-label" x="240" y="62" text-anchor="middle">ESP-NOW</text>
+      <text class="flow-label" x="540" y="62" text-anchor="middle">WiFi · HTTPS</text>
+      <g class="flow-node" id="n-node"><rect x="20" y="40" width="130" height="80" rx="12"/><text x="85" y="72" text-anchor="middle" class="flow-title">node</text><text x="85" y="96" text-anchor="middle" class="flow-sub">ESP32-WROOM-32</text></g>
+      <g class="flow-node" id="n-gw"><rect x="330" y="40" width="140" height="80" rx="12"/><text x="400" y="72" text-anchor="middle" class="flow-title">gateway</text><text x="400" y="96" text-anchor="middle" class="flow-sub">ESP32 Dev Module</text></g>
+      <g class="flow-node" id="n-fb"><rect x="610" y="40" width="130" height="80" rx="12"/><text x="675" y="72" text-anchor="middle" class="flow-title">Firebase</text><text x="675" y="96" text-anchor="middle" class="flow-sub">→ หน้าเว็บ</text></g>
+      <circle id="pkt" class="flow-pkt" cx="150" cy="80" r="8" opacity="0"/>
+      <text id="flow-status" class="flow-status" x="380" y="155" text-anchor="middle">กำลังรอข้อมูล…</text>
+    </svg>
+  </section>
+
+  <section class="esp-cards">
+    <div class="card"><div class="k">สถานะลิงก์</div><div class="v" id="c-link">—</div><div class="s" id="c-link-s"></div></div>
+    <div class="card"><div class="k">แพ็กเก็ตล่าสุด</div><div class="v" id="c-last">—</div><div class="s" id="c-last-s"></div></div>
+    <div class="card"><div class="k">ความแรงสัญญาณ ESP-NOW</div><div class="v" id="c-rssi">—</div><div class="bars" id="c-bars"><i></i><i></i><i></i><i></i></div><div class="s" id="c-rssi-s"></div></div>
+    <div class="card"><div class="k">เห็นตั้งแต่เปิดหน้านี้</div><div class="v" id="c-count">0</div><div class="s" id="c-count-s">แพ็กเก็ต</div></div>
+  </section>
+
+  <section class="esp-feed">
+    <h2>แพ็กเก็ตที่เข้ามา <span class="muted">(ใหม่สุดอยู่บน)</span></h2>
+    <div class="table-wrap">
+      <table id="feed">
+        <thead><tr><th>เวลา</th><th>สถานี</th><th>ลำดับ (#)</th><th>ระดับน้ำ</th><th>สัญญาณ</th><th>สกรู</th></tr></thead>
+        <tbody><tr class="empty"><td colspan="6">ยังไม่มีแพ็กเก็ตใหม่ตั้งแต่เปิดหน้านี้ node ส่งเป็นรอบทุก 10 นาที (ครบ 22 สถานีในราว 1 นาที)</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="esp-feed">
+    <h2>ทุกสถานี <span class="muted">(ค่าล่าสุดจาก gateway)</span></h2>
+    <div class="table-wrap">
+      <table id="all"><thead><tr><th>สถานี</th><th>ลำดับ (#)</th><th>เวลา</th><th>ระดับน้ำ</th><th>สัญญาณ</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+</main>
+<script src="js/esp.js"></script>
+</body>
+</html>

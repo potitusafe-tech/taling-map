@@ -1,0 +1,40 @@
+/* หน้า ESP → ESP (esp.html) ใช้ตัวแปรสีจาก style.css */
+body.esp-page { overflow-y: auto; height: auto; min-height: 100%; }
+.esp-wrap { max-width: 980px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 18px; }
+.esp-head h1 { font-size: 22px; margin: 6px 0 4px; }
+.esp-head p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 70ch; }
+.esp-back { font-size: 13px; color: var(--link); text-decoration: none; }
+.esp-back:hover { text-decoration: underline; }
+
+.esp-flow { background: var(--btn); border: 1px solid var(--line); border-radius: 12px; padding: 8px; }
+.esp-flow svg { display: block; width: 100%; height: auto; }
+.flow-line { stroke: var(--line); stroke-width: 4; stroke-dasharray: 10 8; }
+.flow-label { font-size: 15px; fill: var(--muted); }
+.flow-node rect { fill: var(--bg); stroke: var(--line); stroke-width: 2; transition: stroke .3s, fill .3s; }
+.flow-node.on rect { stroke: var(--seg); stroke-width: 3; }
+.flow-title { font-size: 19px; font-weight: 700; fill: var(--fg); }
+.flow-sub { font-size: 12.5px; fill: var(--muted); }
+.flow-pkt { fill: var(--seg); }
+.flow-status { font-size: 14px; fill: var(--muted); }
+
+.esp-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.card .k { font-size: 12px; color: var(--muted); }
+.card .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.card .s { font-size: 12px; color: var(--muted); }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; margin: 2px 0; }
+.bars i { width: 8px; border-radius: 2px; background: var(--line); }
+.bars i:nth-child(1) { height: 25%; } .bars i:nth-child(2) { height: 50%; } .bars i:nth-child(3) { height: 75%; } .bars i:nth-child(4) { height: 100%; }
+.bars i.on { background: var(--seg); }
+
+.esp-feed h2 { font-size: 15px; margin: 0 0 8px; }
+.muted { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.esp-feed table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.esp-feed th, .esp-feed td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--row); white-space: nowrap; }
+.esp-feed th { font-size: 12px; color: var(--muted); font-weight: 600; background: var(--btn); }
+.esp-feed tr.empty td { color: var(--muted); white-space: normal; }
+.esp-feed tr.new { animation: rowIn 1.6s ease-out; }
+@keyframes rowIn { from { background: color-mix(in srgb, var(--seg) 25%, transparent); } to { background: transparent; } }
+.dotc { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+@media (prefers-reduced-motion: reduce) { .esp-feed tr.new { animation: none; } .flow-node rect { transition: none; } }
