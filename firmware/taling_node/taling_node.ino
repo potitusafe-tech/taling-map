@@ -18,7 +18,8 @@
 
 // ---------- ค่าที่แก้ ----------
 #define TEST_MODE 1                         // 1 = สุ่มค่า (ไม่ต้องต่อเซนเซอร์), 0 = อ่านเซนเซอร์จริง
-#define TEST_ALL_STATIONS 0                 // โหมดสุ่ม: 1 = วนส่งแทนทุกสถานีบนเว็บ, 0 = ส่งเฉพาะ STATION_ID
+#define TEST_ALL_STATIONS 1                 // โหมดสุ่ม: 1 = ส่งครบทุกสถานีบนเว็บเป็นรอบ, 0 = ส่งเฉพาะ STATION_ID ทุก 5 วินาที
+#define TEST_ROUND_MIN 10                   // โหมดสุ่มทุกสถานี: ส่งครบ 22 สถานีทุกกี่นาที
 const char* STATION_ID = "2401-1";          // ต้องตรงกับรหัสในวงเล็บบนเว็บ
 uint8_t GATEWAY_MAC[6] = {0x20, 0x9B, 0xA9, 0x7C, 0xDA, 0x44};   // MAC ของ gateway (บอร์ด ESP32 ตัวแรกที่ต่อ COM4) เปลี่ยนถ้าใช้บอร์ดอื่น
 const uint32_t NET_KEY = 20261023;          // ตัวเลขลับร่วมกับ gateway
@@ -134,6 +135,22 @@ void setup() {
 }
 
 void loop() {
+#if TEST_MODE && TEST_ALL_STATIONS
+  // ส่งครบทุกสถานีเป็นรอบ เว้นสถานีละ 3 วินาที (ให้ gateway ส่งขึ้น Firebase ทัน) แล้วรอรอบถัดไป
+  unsigned long roundStart = millis();
+  Serial.printf("เริ่มรอบส่ง %d สถานี\n", TEST_COUNT);
+  for (int i = 0; i < TEST_COUNT; i++) { sendOne(); delay(3000); }
+  unsigned long waitMs = TEST_ROUND_MIN * 60000UL;
+  unsigned long used = millis() - roundStart;
+  Serial.printf("ครบรอบ รออีก %lu วินาที\n", used < waitMs ? (waitMs - used) / 1000 : 0);
+  if (used < waitMs) delay(waitMs - used);
+#else
+  sendOne();
+  delay(SEND_EVERY_SEC * 1000UL);
+#endif
+}
+
+void sendOne() {
   TalingPacket p;
   fillPacket(p);
   bool ok = sendOnce(p);
@@ -149,5 +166,4 @@ void loop() {
   Serial.printf("%s #%lu ระดับ %.1f cm  สกรู L1%c L2%c L3%c  -> %s (ช่อง %u)\n",
     p.stationId, (unsigned long)p.seq, p.levelCm, p.screws & 1 ? '*' : '-', p.screws & 2 ? '*' : '-', p.screws & 4 ? '*' : '-',
     ok ? "gateway ได้รับ" : "ไม่พบ gateway (เช็ก GATEWAY_MAC / gateway เปิดอยู่ไหม)", channel);
-  delay(SEND_EVERY_SEC * 1000UL);
 }
