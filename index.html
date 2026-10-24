@@ -14,7 +14,6 @@
 </head>
 <body>
 <div id="map"></div>
-<button id="open">☰ เมนู</button>
 
 <!-- ติดต่อฝ่ายช่วยเหลือ: แยกจากแผงข้อมูล อยู่มุมขวาล่าง -->
 <button id="support-btn" class="support-btn" type="button" aria-haspopup="dialog" aria-controls="support">✉ ติดต่อเรา</button>
@@ -29,27 +28,39 @@
   <a id="support-mail" class="support-send" href="mailto:potitusafe@gmail.com?subject=%E0%B8%95%E0%B8%A5%E0%B8%B4%E0%B9%88%E0%B8%87%E0%B8%84%E0%B8%A5%E0%B8%AD%E0%B8%87%3A%20%E0%B9%81%E0%B8%88%E0%B9%89%E0%B8%87%E0%B8%9B%E0%B8%B1%E0%B8%8D%E0%B8%AB%E0%B8%B2">ส่งอีเมล</a>
   <p class="note">ถ้ากดแล้วไม่มีแอปอีเมลเปิดขึ้นมา ให้คัดลอกอีเมลไปส่งเอง และบอกรหัสสถานีในวงเล็บ เช่น (2401-1) ด้วย</p>
 </div>
-<div class="panel">
-  <button class="xbtn" id="close" title="ปิดแท็บ">×</button>
-  <h1>ตลิ่งคลอง · ฉะเชิงเทรา</h1>
-  <div class="seg" role="group" aria-label="โหมดสี">
-    <button type="button" data-theme="auto" aria-pressed="true">อัตโนมัติ</button>
-    <button type="button" data-theme="light" aria-pressed="false">สว่าง</button>
-    <button type="button" data-theme="dark" aria-pressed="false">มืด</button>
+<!-- แผงเมนูเป็นแถบด้านล่าง: ลากหรือกดที่ขีดด้านบนเพื่อเลื่อนขึ้นดู (ย่อ / ครึ่งจอ / เต็ม) -->
+<div class="panel" id="sheet" data-state="peek">
+  <div class="grab" id="grab" role="button" tabindex="0" aria-controls="sheet-body" aria-expanded="false" aria-label="เลื่อนแผงขึ้นเพื่อดูรายการสถานี"><span></span></div>
+  <div class="sheet-head" id="sheet-head">
+    <h1>ตลิ่งคลอง · ฉะเชิงเทรา</h1>
+    <div class="live" id="livemsg" data-state="off">กำลังตรวจการเชื่อมต่อ…</div>
+    <span class="sim" id="simtag">ข้อมูลและตำแหน่งตัวอย่าง ไม่ใช่ค่าที่วัดจริง</span>
   </div>
-  <span class="sim" id="simtag">ข้อมูลและตำแหน่งตัวอย่าง ไม่ใช่ค่าที่วัดจริง</span>
-  <div class="live" id="livemsg" data-state="off">กำลังตรวจการเชื่อมต่อ…</div>
-  <a class="esp-link" href="esp.html">📡 ดูการสื่อสาร ESP → ESP</a>
-  <div id="list"></div>
-  <div class="legend" id="legend"></div>
-  <div class="h2">เส้นทางน้ำ</div>
-  <div id="wmsg">กำลังโหลด…</div>
-  <div class="h2">สถานีกรมชลประทาน (สีน้ำเงิน ◆)</div>
-  <div id="rmsg">กำลังโหลด…</div>
-  <div class="h2">อำเภอ (กดเพื่อซูมไปที่อำเภอ)</div>
-  <div class="dgrid" id="dgrid"></div>
-  <div class="note">หน้านี้เป็นข้อมูลเสริมสำหรับเฝ้าระวัง ไม่ใช่ระบบเตือนภัยทางการ<br>
-  ขอบเขตจังหวัดและอำเภอ: OpenGISData-Thailand โดย chingchai (CC BY 4.0) ลดรายละเอียดเส้นเพื่อใช้แสดงผล</div>
+  <div class="sheet-body" id="sheet-body">
+    <section class="col col-st">
+      <div class="h2">สถานี</div>
+      <div id="list"></div>
+    </section>
+    <section class="col">
+      <div class="seg" role="group" aria-label="โหมดสี">
+        <button type="button" data-theme="auto" aria-pressed="true">อัตโนมัติ</button>
+        <button type="button" data-theme="light" aria-pressed="false">สว่าง</button>
+        <button type="button" data-theme="dark" aria-pressed="false">มืด</button>
+      </div>
+      <a class="esp-link" href="esp.html">📡 ดูการสื่อสาร ESP → ESP</a>
+      <div class="legend" id="legend"></div>
+      <div class="h2">เส้นทางน้ำ</div>
+      <div id="wmsg">กำลังโหลด…</div>
+      <div class="h2">สถานีกรมชลประทาน (สีน้ำเงิน ◆)</div>
+      <div id="rmsg">กำลังโหลด…</div>
+    </section>
+    <section class="col">
+      <div class="h2">อำเภอ (กดเพื่อซูมไปที่อำเภอ)</div>
+      <div class="dgrid" id="dgrid"></div>
+      <div class="note">หน้านี้เป็นข้อมูลเสริมสำหรับเฝ้าระวัง ไม่ใช่ระบบเตือนภัยทางการ<br>
+      ขอบเขตจังหวัดและอำเภอ: OpenGISData-Thailand โดย chingchai (CC BY 4.0) ลดรายละเอียดเส้นเพื่อใช้แสดงผล</div>
+    </section>
+  </div>
 </div>
 
 

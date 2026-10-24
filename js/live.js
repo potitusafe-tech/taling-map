@@ -63,6 +63,7 @@ function setLiveMsg(text, ok) {
   const el = document.getElementById('livemsg');
   if (!el) return;
   el.textContent = text;
+  el.title = text;   // จอแคบตัดข้อความด้วย … ชี้ค้างเพื่อดูเต็ม
   el.dataset.state = ok ? 'ok' : 'off';
 }
 
@@ -78,7 +79,7 @@ async function loadLive() {
       const n = Object.keys(data || {}).filter(id => clean.some(s => s.id === id)).length;
       STATIONS = clean; recordTrail(); render();
       const nr = nextRound();
-      setLiveMsg('ข้อมูลสดจาก ESP32: ' + n + ' สถานี · อ่านล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + (nr ? ' · รอบถัดไป ' + nr : ''), true);
+      setLiveMsg('สด ' + n + ' สถานี · อ่าน ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + (nr ? ' · รอบถัดไป ' + nr : ''), true);
     } catch (e) {
       setLiveMsg('เชื่อมต่อ Firebase ไม่ได้ (' + safeText(e.message, 40) + ') แสดงค่าล่าสุดที่มี', false);
     }

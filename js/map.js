@@ -19,11 +19,10 @@ const prov = L.geoJSON(LAYERS.prov, {
   style: { color: '#d32f2f', weight: 3, fill: false },
   interactive: false
 }).addTo(map);
-// เว้นที่ให้แผงด้านซ้ายบนจอกว้าง
+// เว้นที่ด้านล่างให้แถบเมนู (ความสูงปัจจุบันอยู่ใน --sheet-h)
 function fitOpts(pad) {
-  return window.innerWidth > 700
-    ? { paddingTopLeft: [300, pad], paddingBottomRight: [pad, pad] }
-    : { padding: [pad, pad] };
+  const sheetH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sheet-h')) || 76;
+  return { paddingTopLeft: [pad, pad], paddingBottomRight: [pad, pad + sheetH] };
 }
 // ถ้าหน้าเปิดตอนแผนที่ยังไม่มีขนาด (เช่นแท็บซ่อนอยู่) ตั้งมุมมองคร่าวๆ ก่อน แล้วค่อยพอดีจังหวัดเมื่อมีขนาด
 let fitted = false;

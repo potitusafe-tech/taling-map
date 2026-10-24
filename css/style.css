@@ -25,8 +25,39 @@
 html, body { height: 100%; margin: 0; font-family: system-ui, "Noto Sans Thai", Tahoma, sans-serif; background: var(--bg); color: var(--fg); }
 #map { position: absolute; inset: 0; background: var(--bg); }
 .leaflet-tile-pane { filter: var(--tiles); }
-.panel { position: absolute; z-index: 1000; top: 10px; left: 10px; width: 270px; max-width: calc(100% - 20px); max-height: calc(100% - 20px); overflow: auto; background: var(--bg); color: var(--fg); border-radius: 10px; box-shadow: 0 2px 10px var(--shadow); padding: 12px 14px; box-sizing: border-box; font-size: 13px; }
-.panel h1 { font-size: 16px; margin: 0 0 4px; }
+/* แผงเมนูแบบแถบล่าง: ความสูงตั้งจาก js/main.js (--sheet-h) ปุ่มและเครดิตแผนที่ลอยอยู่เหนือแถบเสมอ */
+.panel { position: absolute; z-index: 1000; left: 0; right: 0; bottom: 0; height: var(--sheet-h, 76px); display: flex; flex-direction: column; overflow: hidden; background: var(--bg); color: var(--fg); border-radius: 14px 14px 0 0; box-shadow: 0 -2px 14px var(--shadow); box-sizing: border-box; font-size: 13px; transition: height .28s cubic-bezier(.25,.8,.3,1); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.panel.dragging { transition: none; user-select: none; }
+.grab { flex: none; display: flex; justify-content: center; padding: 8px 0 6px; cursor: grab; touch-action: none; }
+.grab span { width: 44px; height: 5px; border-radius: 3px; background: var(--line); }
+.grab:hover span, .grab:focus-visible span { background: var(--muted); }
+.grab:focus-visible { outline: none; }
+.panel.dragging .grab { cursor: grabbing; }
+/* หัวแถบ: จอแคบ = ชื่อ (+ป้ายตัวอย่าง) บรรทัดแรก สถานะบรรทัดสอง, จอกว้าง = บรรทัดเดียว; ข้อความยาวตัดด้วย … ไม่ขึ้นบรรทัดใหม่ */
+.sheet-head { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px; padding: 0 16px 10px; touch-action: none; cursor: grab; }
+.panel h1 { font-size: 16px; margin: 0; white-space: nowrap; }
+.sheet-head .sim { margin: 0 0 0 auto; white-space: nowrap; }
+.sheet-head .live { order: 3; flex: 1 0 100%; min-width: 0; margin: 0; }
+.live { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.live::before { display: inline-block; margin-right: 6px; vertical-align: 0; }
+@media (min-width: 760px) {
+  .sheet-head { flex-wrap: nowrap; }
+  .sheet-head .live { order: 0; flex: 1 1 auto; }
+  .sheet-head .sim { margin: 0; }
+}
+.sheet-body { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 22px; align-items: start; padding: 4px 16px 16px; border-top: 1px solid var(--row); }
+.sheet-body .col > .h2:first-child { margin-top: 6px; }
+#list { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0 8px; }
+#list .grp { grid-column: 1 / -1; }
+/* ชื่อในรายการบรรทัดเดียว ยาวเกินตัดด้วย … (ชื่อเต็มอยู่ใน title) */
+.st .n, .grp, .dgrid span, .legend span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st .v { flex: none; white-space: nowrap; font-size: 12px; }
+.dgrid button { min-width: 0; }
+.sheet-body .seg { margin-top: 8px; }
+@media (min-width: 760px) {
+  .sheet-body { grid-template-columns: minmax(0, 2.2fr) minmax(200px, 1fr) minmax(200px, 1fr); }
+}
+.leaflet-bottom { bottom: var(--sheet-h, 76px); }
 .sim { display: inline-block; border: 1px solid var(--simc); color: var(--simc); border-radius: 6px; padding: 1px 6px; font-size: 11px; margin-bottom: 8px; }
 .live { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); margin: -2px 0 6px; }
 .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; flex: none; background: #9aa3a8; }
@@ -82,7 +113,6 @@ table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums
 .rid { width: 14px; height: 14px; background: #1565c0; border: 2px solid #fff; box-shadow: 0 0 0 1px #0d3c7a, 0 1px 4px rgba(0,0,0,.4); transform: rotate(45deg); }
 .h2 { margin-top: 12px; font-weight: 700; font-size: 12.5px; }
 .xbtn { position: absolute; top: 6px; right: 8px; border: 0; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: var(--muted); }
-#open { position: absolute; z-index: 1000; top: 10px; left: 10px; display: none; font: inherit; font-weight: 700; background: var(--bg); color: var(--fg); border: 0; border-radius: 8px; padding: 8px 12px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
 /* กราฟระดับน้ำในกล่องสถานี */
 .trend { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--row); }
 .trend-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 12.5px; }
@@ -90,11 +120,11 @@ table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums
 .trend svg { display: block; width: 100%; height: auto; margin-top: 4px; }
 .trend-foot { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
-/* ติดต่อฝ่ายช่วยเหลือ: มุมขวาล่าง เหนือเครดิตแผนที่ */
-.support-btn { position: absolute; z-index: 1001; right: 10px; bottom: 28px; font: inherit; font-size: 13px; font-weight: 700; background: var(--seg); color: var(--seg-fg); border: 0; border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
+/* ติดต่อฝ่ายช่วยเหลือ: มุมขวาล่าง เหนือแถบเมนูและเครดิตแผนที่ */
+.support-btn { position: absolute; z-index: 1001; right: 10px; bottom: calc(var(--sheet-h, 76px) + 28px); transition: bottom .28s cubic-bezier(.25,.8,.3,1); font: inherit; font-size: 13px; font-weight: 700; background: var(--seg); color: var(--seg-fg); border: 0; border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
 .support-btn:hover { filter: brightness(1.08); }
 .support-btn:focus-visible, .support button:focus-visible, .support a:focus-visible { outline: 3px solid var(--simc); outline-offset: 2px; }
-.support { position: absolute; z-index: 1002; right: 10px; bottom: 72px; width: 290px; max-width: calc(100% - 20px); max-height: calc(100% - 84px); overflow: auto; box-sizing: border-box; background: var(--bg); color: var(--fg); border-radius: 10px; box-shadow: 0 4px 18px var(--shadow); padding: 14px 16px; font-size: 13px; }
+.support { position: absolute; z-index: 1002; right: 10px; bottom: calc(var(--sheet-h, 76px) + 72px); width: 290px; max-width: calc(100% - 20px); max-height: calc(100% - var(--sheet-h, 76px) - 84px); overflow: auto; box-sizing: border-box; background: var(--bg); color: var(--fg); border-radius: 10px; box-shadow: 0 4px 18px var(--shadow); padding: 14px 16px; font-size: 13px; }
 .support h2 { font-size: 15px; margin: 0 24px 4px 0; }
 .support p { margin: 0 0 10px; }
 .support-email { display: flex; align-items: center; gap: 8px; background: var(--btn); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
@@ -102,8 +132,6 @@ table.sum td:nth-child(2) { font-weight: 600; font-variant-numeric: tabular-nums
 .support-email button { font: inherit; font-size: 12px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
 .support-send { display: block; margin-top: 10px; text-align: center; text-decoration: none; font-weight: 700; background: var(--seg); color: var(--seg-fg); border-radius: 8px; padding: 8px; }
 .support .note { margin: 8px 0 0; }
-body.closed .panel { display: none; }
-body.closed #open { display: block; }
 .stwrap { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: flex-start; }
 .stwrap table.info { flex: 1 1 220px; width: auto; }
 @media (min-width: 680px) { .stwrap { width: 590px; flex-wrap: nowrap; } .stwrap table.info { flex: 1 1 auto; } .fig { flex: 0 0 260px; } }
@@ -120,5 +148,5 @@ body.closed #open { display: block; }
 @media (prefers-reduced-motion: reduce) { .wl { transition: none; } .bob, .wv1, .wv2 { animation: none; } }
 #wmsg { margin-top: 6px; font-size: 12px; color: var(--link); }
 .silent-warn { margin: 6px 0 2px; padding: 5px 8px; border-radius: 6px; font-size: 12px; background: var(--btn); border: 1px solid #8e979c; color: var(--fg); }
-.esp-link { display: inline-block; margin: -2px 0 8px; font-size: 12px; color: var(--link); text-decoration: none; }
+.esp-link { display: inline-block; margin: 2px 0 4px; font-size: 12px; color: var(--link); text-decoration: none; }
 .esp-link:hover { text-decoration: underline; }

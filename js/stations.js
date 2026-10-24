@@ -106,7 +106,7 @@ function render() {
     m.on('popupclose', () => { if (!rendering) delete waterY[s.id]; });
 
     const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'st';
+    btn.type = 'button'; btn.className = 'st'; btn.title = stationLabel(s);
     const d = document.createElement('span'); d.className = 'd'; d.style.background = mk.color;
     const n = document.createElement('span'); n.className = 'n'; n.textContent = stationLabel(s);
     const v = document.createElement('span'); v.className = 'v'; v.textContent = silent ? 'เงียบ' : st.name;
@@ -120,9 +120,9 @@ function render() {
 function renderLegend() {
   const lg = document.getElementById('legend');
   lg.textContent = '';
-  const rows = THRESHOLDS.slice().reverse().map(t => ({ c: t.color, text: t.name + ' ตั้งแต่ ' + t.cm + ' cm (เกณฑ์ตัวอย่าง)' }));
+  const rows = THRESHOLDS.slice().reverse().map(t => ({ c: t.color, text: t.name + ' ≥ ' + t.cm + ' cm' }));
   rows.unshift({ c: NORMAL.color, text: NORMAL.name });
-  rows.push({ c: SILENT.color, text: SILENT.name + ' (เกินหนึ่งรอบส่ง)' });
+  rows.push({ c: SILENT.color, text: SILENT.name });
   rows.forEach(r => {
     const row = document.createElement('div');
     const i = document.createElement('i'); i.style.background = r.c;
