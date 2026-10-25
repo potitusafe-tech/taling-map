@@ -26,9 +26,13 @@ html, body { height: 100%; margin: 0; font-family: system-ui, "Noto Sans Thai", 
 #map { position: absolute; inset: 0; background: var(--bg); }
 .leaflet-tile-pane { filter: var(--tiles); }
 /* ปุ่มเมนูมุมซ้ายล่าง + รายการให้เลือกว่าจะดูอะไร (js/sheet.js) */
-.menu-btn { position: absolute; z-index: 1001; left: 10px; bottom: calc(var(--sheet-h, 0px) + 28px); transition: bottom .28s cubic-bezier(.25,.8,.3,1); font: inherit; font-size: 13px; font-weight: 700; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
+.menu-btn { position: absolute; z-index: 1001; left: 10px; bottom: calc(var(--sheet-h, 0px) + 28px); transition: bottom .28s cubic-bezier(.25,.8,.3,1); font: inherit; font-size: 15px; font-weight: 700; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 999px; padding: 10px 18px; box-shadow: 0 2px 10px var(--shadow); cursor: pointer; }
+@media (min-width: 760px) {   /* จอคอมใหญ่กว่ามือถืออีกขั้น */
+  .menu-btn { font-size: 17px; padding: 12px 24px; }
+  .menu { bottom: calc(var(--sheet-h, 0px) + 88px); }
+}
 .menu-btn[aria-expanded="true"] { background: var(--seg); color: var(--seg-fg); border-color: var(--seg); }
-.menu { position: absolute; z-index: 1002; left: 10px; bottom: calc(var(--sheet-h, 0px) + 72px); width: 270px; max-width: calc(100% - 20px); box-sizing: border-box; background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 4px 18px var(--shadow); padding: 12px; display: grid; gap: 6px; font-size: 13px; }
+.menu { position: absolute; z-index: 1002; left: 10px; bottom: calc(var(--sheet-h, 0px) + 80px); width: 270px; max-width: calc(100% - 20px); box-sizing: border-box; background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 4px 18px var(--shadow); padding: 12px; display: grid; gap: 6px; font-size: 13px; }
 .menu[hidden] { display: none; }
 .menu-title { font-weight: 700; font-size: 14px; }
 .menu .live { margin: 0 0 4px; }
